@@ -298,7 +298,7 @@
         <h2 class="sum__title">${esc(t('sum.title'))}</h2>
         <ul class="sum__items">${ls.map((l) => `
           <li class="sum__item">
-            <span class="sum__tile" style="--c:${l.c.hex}" aria-hidden="true"><svg class="wm"><use href="#wordmark"/></svg></span>
+            <span class="sum__tile" style="--c:${l.c.hex}" aria-hidden="true"><svg class="wm" viewBox="0 0 1069 100" preserveAspectRatio="xMidYMid meet"><use href="#wordmark"/></svg></span>
             <span class="sum__what">
               <span class="sum__name">${esc(V.pieceName(l.p, l.c))}</span>
               <span class="sum__meta">${esc(V.L(l.c.name))} · ${esc(l.size)} · ${esc(t('sum.qty', { n: l.qty }))}</span>
@@ -457,10 +457,7 @@
   function processingHTML() {
     return `
       <div class="co__proc" role="status">
-        <span class="sweep sweep--small" aria-hidden="true">
-          <span class="sweep__layer sweep__layer--dim"><svg class="sweep__mark"><use href="#wordmark"/></svg><span class="sweep__line"></span></span>
-          <span class="sweep__layer sweep__layer--lit"><svg class="sweep__mark"><use href="#wordmark"/></svg><span class="sweep__line"></span></span>
-        </span>
+        ${V.loaderArt('small')}
         <p>${esc(t('proc'))}</p>
       </div>`;
   }
@@ -486,7 +483,7 @@
         </dl>
         <ul class="sum__items done__items">${o.lines.map((l) => `
           <li class="sum__item">
-            <span class="sum__tile" style="--c:${l.c.hex}" aria-hidden="true"><svg class="wm"><use href="#wordmark"/></svg></span>
+            <span class="sum__tile" style="--c:${l.c.hex}" aria-hidden="true"><svg class="wm" viewBox="0 0 1069 100" preserveAspectRatio="xMidYMid meet"><use href="#wordmark"/></svg></span>
             <span class="sum__what">
               <span class="sum__name">${esc(V.pieceName(l.p, l.c))}</span>
               <span class="sum__meta">${esc(V.L(l.c.name))} · ${esc(l.size)} · ${esc(t('sum.qty', { n: l.qty }))}</span>
@@ -738,7 +735,7 @@
       $('#co-title')?.focus({ preventScroll: true });
     }, reduceMotionDelay());
   }
-  function reduceMotionDelay() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 400 : 1800; }
+  function reduceMotionDelay() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 400 : 3000; }
 
   V.onLang(() => {
     if (!root.hidden) render();

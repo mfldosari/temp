@@ -719,68 +719,175 @@ h2 { font-size: clamp(28px, 3.4vw, 42px); }
 /* --------------------------------------------------------------------------
    Loading: the VEYLO loader, skeletons, and images that fade in
    -------------------------------------------------------------------------- */
-@property --hole { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-
-.loader {
+/* The loader: a black veil at 60% over the site (still visible and sharp behind
+   it), and above it the logo, which inverts whatever is behind it through a
+   difference blend. The wrapper has no box of its own (display: contents) so the
+   logo blends with the darkened page itself, not with an isolated layer. Taps
+   pass through: the site stays usable while it plays. */
+.loader { display: contents; }
+.loader__veil {
   position: fixed;
   inset: 0;
   z-index: 200;
-  display: grid;
-  place-items: center;
-  background: #000;
+  background: rgba(0, 0, 0, .6);
+  pointer-events: none;
 }
+.loader__stage {
+  position: fixed;
+  inset: 0;
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+/* first visit only: once the chain has run, the tagline settles in beneath */
+.loader__tag {
+  margin: 0;
+  padding-inline-start: .5em;
+  font-size: 10px;
+  letter-spacing: .5em;
+  color: rgba(255, 255, 255, .62);
+  white-space: nowrap;
+  opacity: 0;
+}
+.loader.is-intro .loader__tag { animation: tag-in 1.3s 4.3s var(--ease) both; }
+.loader.is-quick .loader__tag { display: none; }
+@keyframes tag-in { from { opacity: 0; letter-spacing: .85em; } to { opacity: 1; letter-spacing: .5em; } }
 
-/* The sweep: the wordmark and a faint line as a dim ghost, and a lit copy on
-   top that shows only through a narrow, feathered vertical slit moving left
-   to right. Always left to right, whatever the page direction. */
-.sweep {
-  --sweep-w: min(58vw, 420px);
-  --sweep-dur: 3.4s;
+/* The VEYLO chain loader. Two copies of the wordmark: a dim one (13%) and a lit
+   one (#F2F2EF) that shows only left of a soft moving edge — light filling the
+   letters like a progress bar. Both copies make the same letter moves at the same
+   time, so each move happens in the light. Always left to right; every timing is a
+   fraction of --vl-dur (6 s on a first visit, quicker for page changes). */
+.vl {
+  --vl-w: min(60vw, 440px);
+  --vl-dur: 6s;
   position: relative;
   display: block;
-  width: var(--sweep-w);
+  width: var(--vl-w);
   direction: ltr;
 }
-.sweep--small { --sweep-w: 180px; }
-.sweep__layer { display: flex; flex-direction: column; gap: calc(var(--sweep-w) * .085); }
-.sweep__mark { display: block; width: 100%; height: auto; aspect-ratio: 1069 / 100; overflow: visible; }
-.sweep__line { display: block; height: 1px; }
-.sweep__layer--dim { color: rgba(242, 242, 239, .13); }
-.sweep__layer--dim .sweep__line { background: rgba(242, 242, 239, .07); }
-.sweep__layer--lit {
+.vl--small { --vl-w: 190px; --vl-dur: 3.3s; mix-blend-mode: difference; }
+.vl__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.vl__svg polygon, .vl__svg rect { fill: currentColor; }
+.vl__svg path { fill: none; stroke: currentColor; stroke-width: 15; }
+.vl__svg--dim { color: rgba(255, 255, 255, .28); }
+.vl__svg--lit {
   position: absolute;
   inset: 0;
-  color: #f2f2ef;
-  -webkit-mask-image: linear-gradient(90deg, transparent 46.2%, rgba(0, 0, 0, .5) 48.6%, #000 50%, rgba(0, 0, 0, .5) 51.4%, transparent 53.8%);
-          mask-image: linear-gradient(90deg, transparent 46.2%, rgba(0, 0, 0, .5) 48.6%, #000 50%, rgba(0, 0, 0, .5) 51.4%, transparent 53.8%);
-  -webkit-mask-size: 240% 100%;
-          mask-size: 240% 100%;
+  color: #fff;
+  /* solid left of the edge, faint right of it; 300% wide so the edge can travel the full word */
+  -webkit-mask-image: linear-gradient(90deg, #000 48.8%, transparent 51.2%);
+          mask-image: linear-gradient(90deg, #000 48.8%, transparent 51.2%);
+  -webkit-mask-size: 300% 100%;
+          mask-size: 300% 100%;
   -webkit-mask-repeat: no-repeat;
           mask-repeat: no-repeat;
-  -webkit-mask-position: 100% 0;
-          mask-position: 100% 0;
-  animation: slit var(--sweep-dur) infinite;
+  -webkit-mask-position: 77.20% 0;
+          mask-position: 77.20% 0;
+  animation: vl-fill var(--vl-dur) infinite;
 }
-.sweep__layer--lit .sweep__line { background: #f2f2ef; }
-/* a short dark hold, the sweep (slow in, fast through the middle, slow out), then dark again */
-@keyframes slit {
-  0%, 10% { -webkit-mask-position: 100% 0; mask-position: 100% 0; animation-timing-function: cubic-bezier(.62, 0, .38, 1); }
-  78%, 100% { -webkit-mask-position: 0% 0; mask-position: 0% 0; }
-}
-.loader.is-quick .sweep { --sweep-dur: 1.3s; }
-.loader.is-flash { animation: loader-in .15s ease-out both; }
+.vl__svg * { transform-box: fill-box; }
+.vl-v  { transform-origin: 50% 100%; animation: vl-v var(--vl-dur) infinite; }
+.vl-e1, .vl-e3 { transform-origin: 50% 50%; animation: vl-e-out var(--vl-dur) infinite; }
+.vl-e2 { transform-origin: 50% 50%; animation: vl-e-in var(--vl-dur) infinite; }
+.vl-ya { transform-origin: 100% 91%; animation: vl-ya var(--vl-dur) infinite; }
+.vl-yb { transform-origin: 0% 91%; animation: vl-yb var(--vl-dur) infinite; }
+.vl-l  { transform-origin: 50% 50%; animation: vl-l var(--vl-dur) infinite; }
+.vl-ot { transform-origin: 50% 50%; animation: vl-coin var(--vl-dur) infinite linear; }
 
-/* leaving: the room opens from the centre */
-.loader.is-leaving {
-  animation: loader-out .8s var(--ease) forwards;
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 16%));
-          mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 16%));
+@keyframes vl-fill {
+  0%, 6.667% { -webkit-mask-position: 77.20% 0; mask-position: 77.20% 0; opacity: 1; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  16.667% { -webkit-mask-position: 65.56% 0; mask-position: 65.56% 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  26.667% { -webkit-mask-position: 55.78% 0; mask-position: 55.78% 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  36.667% { -webkit-mask-position: 45.11% 0; mask-position: 45.11% 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  46.667% { -webkit-mask-position: 35.68% 0; mask-position: 35.68% 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  56.667% { -webkit-mask-position: 23.67% 0; mask-position: 23.67% 0; opacity: 1; }
+  83.333% { -webkit-mask-position: 23.67% 0; mask-position: 23.67% 0; opacity: 1; animation-timing-function: ease-in-out; }
+  93.333% { -webkit-mask-position: 23.67% 0; mask-position: 23.67% 0; opacity: 0; }
+  93.667%, 100% { -webkit-mask-position: 77.20% 0; mask-position: 77.20% 0; opacity: 1; }
 }
+/* V: the arms stretch upward, then snap back with a small elastic bounce */
+@keyframes vl-v {
+  0%, 16.667% { transform: none; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  20.833% { transform: scaleY(1.42); animation-timing-function: cubic-bezier(.5, 0, .7, .4); }
+  23.833% { transform: scaleY(.93); animation-timing-function: ease-out; }
+  26.333% { transform: scaleY(1.04); animation-timing-function: ease-in-out; }
+  29.167%, 100% { transform: none; }
+}
+/* E: top and bottom bars slide one way, the middle bar the other, like lock tumblers, then click home */
+@keyframes vl-e-out {
+  0%, 26.667% { transform: none; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  31.667%, 33.333% { transform: translateX(46px); animation-timing-function: cubic-bezier(.6, 0, .9, .6); }
+  36.333% { transform: translateX(-4px); animation-timing-function: ease-out; }
+  38.333%, 100% { transform: none; }
+}
+@keyframes vl-e-in {
+  0%, 26.667% { transform: none; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  31.667%, 33.333% { transform: translateX(-46px); animation-timing-function: cubic-bezier(.6, 0, .9, .6); }
+  36.333% { transform: translateX(4px); animation-timing-function: ease-out; }
+  38.333%, 100% { transform: none; }
+}
+/* Y: the arms fold shut into one straight line, like a key, then spring open a little wider and settle */
+@keyframes vl-ya {
+  0%, 36.667% { transform: none; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  41.667%, 43.333% { transform: rotate(52deg); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  47.333% { transform: rotate(-9deg); animation-timing-function: ease-in-out; }
+  50.000%, 100% { transform: none; }
+}
+@keyframes vl-yb {
+  0%, 36.667% { transform: none; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  41.667%, 43.333% { transform: rotate(-52deg); animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
+  47.333% { transform: rotate(9deg); animation-timing-function: ease-in-out; }
+  50.000%, 100% { transform: none; }
+}
+/* L: turns so its foot points left, toward the Y, holds, then turns back */
+@keyframes vl-l {
+  0%, 46.667% { transform: none; animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  52.500%, 59.167% { transform: scaleX(-1); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  65.000%, 100% { transform: none; }
+}
+/* O: as the L turns back, the top half flips once over its own centre, like a coin, and lands in place */
+@keyframes vl-coin {
+  0% { transform: none; }
+  60.000% { transform: scaleY(1.0000); }
+  61.042% { transform: scaleY(0.9999); }
+  62.083% { transform: scaleY(0.9932); }
+  63.125% { transform: scaleY(0.9239); }
+  64.167% { transform: scaleY(0.5972); }
+  65.208% { transform: scaleY(-0.2447); }
+  66.250% { transform: scaleY(-1.0000); }
+  67.292% { transform: scaleY(-0.2447); }
+  68.333% { transform: scaleY(0.5972); }
+  69.375% { transform: scaleY(0.9239); }
+  70.417% { transform: scaleY(0.9932); }
+  71.458% { transform: scaleY(0.9999); }
+  72.500% { transform: scaleY(1.0000); }
+  100% { transform: none; }
+}
+
+.loader .vl { --vl-dur: 6s; }
+.loader.is-quick .vl { --vl-dur: 3.3s; }
+/* first visit, once the chain has finished: stay lit while the tagline settles */
+.loader.is-settled .vl__svg--lit { animation: none; -webkit-mask-position: 23.67% 0; mask-position: 23.67% 0; opacity: 1; }
+.loader.is-settled .vl__svg * { animation: none; }
+
+/* page changes: the veil and logo fade in quickly */
+.loader.is-flash .loader__veil, .loader.is-flash .loader__stage { animation: loader-in .15s ease-out both; }
+/* leaving: the veil and the logo fade away together, the logo scaling up very slightly */
+.loader .vl, .loader__tag { transition: transform .8s var(--ease); }
+.loader.is-leaving .loader__veil, .loader.is-leaving .loader__stage { animation: loader-out .8s var(--ease) forwards; }
+.loader.is-leaving .vl, .loader.is-leaving .loader__tag { transform: scale(1.06); }
 @keyframes loader-in  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes loader-out { 0% { --hole: 0%; opacity: 1; } 70% { opacity: 1; } 100% { --hole: 130%; opacity: 0; } }
+@keyframes loader-out { from { opacity: 1; } to { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .sweep__layer--lit { -webkit-mask-image: none; mask-image: none; }   /* no sweep: show the mark plainly */
+  .vl__svg--lit { -webkit-mask-image: none; mask-image: none; }        /* no motion: show the mark plainly */
+  .loader.is-intro .loader__tag { opacity: 1; }
 }
 
 /* skeletons: a slow shimmer until the image (or the real card) arrives */
@@ -1148,8 +1255,8 @@ select.input {
   .entry__lede { font-size: 14px; }
   .entry__cta { align-self: flex-start; min-width: 190px; margin-top: 12px; font-size: 13px; }
   .entry__count { margin-top: 8px; font-size: 13px; }
-  .sweep { --sweep-w: min(68vw, 300px); }
-  .sweep--small { --sweep-w: 160px; }
+  .vl { --vl-w: min(70vw, 320px); }
+  .vl--small { --vl-w: 170px; }
   .hero__cta .btn { flex: 1; }
 
   .emb { letter-spacing: .24em; padding-inline-start: .24em; }

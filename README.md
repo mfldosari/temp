@@ -10,7 +10,9 @@ A dark, Arabic-first storefront for VEYLO (with an English switch), built as pla
 - **Pullovers** (`#pullovers`) and **Sweaters** (`#sweaters`): a page per category, opened by the banner's "Discover" link or the header. The pullovers page has a filter by style.
 - **Checkout**: opens from the bag (see below).
 
-A VEYLO loader plays on a first visit: the wordmark sits as a dim ghost on black while a narrow beam sweeps across it, lighting only what it passes (one 3.4 s sweep, then the screen opens from the centre). Later visits and page changes, including going back from a category page, use a faster sweep; payment processing shows a small one. Photos load over a shimmering skeleton.
+The VEYLO loader: a 60% black veil darkens the site (still visible behind it), and above it the wordmark, which inverts whatever is behind it, starts faint. Light fills the letters left to right and each letter makes one small move as it fills: the V stretches, the E's bars slide like lock tumblers, the Y folds into a key, the L looks back, and the top of the O flips like a coin. On a first visit it plays once (6 s), then "Where mystery meets style" appears and the veil and logo fade away together. Later visits and page changes play a quicker chain (3.3 s); payment shows a small one. Photos load over a shimmering skeleton.
+
+Each deploy stamps `?v=` on the CSS and JS links, so phones never mix a new page with cached old files.
 
 ## What's here
 

@@ -613,9 +613,16 @@
      letter, a beam of light crosses it and the room opens from the centre.
      Later visits, page changes and payment use a short version.
      ------------------------------------------------------------------------ */
+  const VL_LETTERS = '<g class="vl-v"><polygon points="0,0 18,0 79,83 140,0 158,0 88,100 70,100"/></g><rect class="vl-e vl-e1" x="254" y="0" width="125" height="15"/><rect class="vl-e vl-e2" x="254" y="42.5" width="125" height="15"/><rect class="vl-e vl-e3" x="254" y="85" width="125" height="15"/><polygon class="vl-ya" points="472,0 492,0 546.6,44.5 546.6,55.5 538.5,55.5"/><polygon class="vl-yb" points="600,0 620,0 553.5,55.5 545.4,55.5 545.4,44.5"/><rect class="vl-ys" x="538.5" y="54" width="15" height="46"/><polygon class="vl-l" points="710,0 725,0 725,85 833,85 833,100 710,100"/><path class="vl-ot" d="M933.5 39 V29.5 A22 22 0 0 1 955.5 7.5 H1039.5 A22 22 0 0 1 1061.5 29.5 V39"/><path class="vl-ob" d="M933.5 57 V70.5 A22 22 0 0 0 955.5 92.5 H1039.5 A22 22 0 0 0 1061.5 70.5 V57"/>';
+  const loaderArt = (size) => {
+    const svg = (cls) => `<svg class="vl__svg ${cls}" viewBox="-30 -70 1129 240" preserveAspectRatio="xMidYMid meet" focusable="false">${VL_LETTERS}</svg>`;
+    return `<span class="vl${size === 'small' ? ' vl--small' : ''}" aria-hidden="true">${svg('vl__svg--dim')}${svg('vl__svg--lit')}</span>`;
+  };
+
   const loader = (() => {
     const el = $('#loader');
-    const CYCLE = { intro: 3400, quick: 1300 };           // must match --sweep-dur in style.css
+    const DUR = { intro: 6000, quick: 3300 };             // must match --vl-dur in style.css
+    const LIT = 5 / 6;                                    // share of a loop at which the whole word is lit (before it dims)
     let hideTimer = 0;
     let cycleTimer = 0;
     const leave = () => {
@@ -625,25 +632,34 @@
       hideTimer = setTimeout(() => { el.hidden = true; el.className = 'loader'; }, reduceMotion ? 50 : 800);
     };
     return {
-      // first paint of the site: at least one full sweep, then open once the page has loaded
+      // first paint of the site
       intro() {
         let first = true;
         try { first = !localStorage.getItem('veylo.visited'); localStorage.setItem('veylo.visited', '1'); } catch { /* storage unavailable: treat as a first visit */ }
         el.hidden = false;
         el.className = `loader ${first ? 'is-intro' : 'is-quick'}`;
-        if (reduceMotion) { setTimeout(leave, 500); return; }
-        const cycle = first ? CYCLE.intro : CYCLE.quick;
+        if (reduceMotion) { setTimeout(leave, first ? 1800 : 500); return; }
         let loaded = document.readyState === 'complete';
         if (!loaded) window.addEventListener('load', () => { loaded = true; }, { once: true });
-        let sweeps = 0;
-        const atCycleEnd = () => {                         // leave only between sweeps, never mid-sweep
-          sweeps += 1;
-          if (loaded || sweeps * cycle > 6500) leave();
-          else cycleTimer = setTimeout(atCycleEnd, cycle);
+        const started = Date.now();
+        if (first) {
+          // one full chain; the word stays lit while the tagline settles; then in, once the page has loaded
+          setTimeout(() => el.classList.add('is-settled'), DUR.intro * LIT);
+          const tryLeave = () => {
+            if (loaded || Date.now() - started > 10000) leave();
+            else cycleTimer = setTimeout(tryLeave, 250);
+          };
+          cycleTimer = setTimeout(tryLeave, 6400);
+          return;
+        }
+        // return visit: leave the moment the word is fully lit, once the page has loaded
+        const atLit = () => {
+          if (loaded || Date.now() - started > 9000) leave();
+          else cycleTimer = setTimeout(atLit, DUR.quick);
         };
-        cycleTimer = setTimeout(atCycleEnd, cycle);
+        cycleTimer = setTimeout(atLit, DUR.quick * LIT);
       },
-      // a cover for switching pages, one quick sweep long: `covered` once the
+      // a cover for switching pages, one quick chain long: `covered` once the
       // screen is covered, `opening` once it starts to open again
       flash() {
         if (!el.hidden && !el.classList.contains('is-leaving')) {
@@ -655,7 +671,7 @@
         el.hidden = false;
         el.className = 'loader is-quick is-flash';
         const covered = new Promise((r) => setTimeout(r, reduceMotion ? 0 : 150));
-        const opening = new Promise((r) => { cycleTimer = setTimeout(() => { leave(); r(); }, reduceMotion ? 150 : CYCLE.quick); });
+        const opening = new Promise((r) => { cycleTimer = setTimeout(() => { leave(); r(); }, reduceMotion ? 150 : DUR.quick * LIT); });
         return { covered, opening };
       },
     };
@@ -793,7 +809,7 @@
       subtotal += p.price * l.qty;
       return `
       <li class="bag__item">
-        <span class="bag__tile" style="--c:${c.hex}" aria-hidden="true"><svg class="wm"><use href="#wordmark"/></svg></span>
+        <span class="bag__tile" style="--c:${c.hex}" aria-hidden="true"><svg class="wm" viewBox="0 0 1069 100" preserveAspectRatio="xMidYMid meet"><use href="#wordmark"/></svg></span>
         <div>
           <p class="bag__name">${esc(pieceName(p, c))}</p>
           <p class="bag__variant">${esc(L(c.name))} · ${esc(l.size)}</p>
@@ -1076,4 +1092,5 @@
   loader.intro();
   route();
   window.VEYLO.loader = loader;
+  window.VEYLO.loaderArt = loaderArt;
 })();

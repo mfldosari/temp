@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;300;400;500&family=IBM+Plex+Sans+Arabic:wght@300;400;500&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=202609280157">
 </head>
 <body>
 <!-- The VEYLO wordmark, redrawn as vector from the brand logo for the header and the bag.
@@ -34,17 +34,23 @@
 
 <div class="site" id="site" dir="rtl" lang="ar">
 
-  <!-- LOADER: the VEYLO wordmark sits as a dim ghost on black; a narrow soft beam sweeps across it,
-       lighting only what it passes, with a bright segment gliding along the faint line beneath.
-       Loops every 3.4 s. Used on a first visit, and faster for later visits and page changes. -->
+  <!-- LOADER: a black veil at 60% darkens the site (still visible and sharp behind it). Above it, the
+       VEYLO wordmark inverts whatever is behind it and starts faint (28%); a soft fill moves through the letters left to right,
+       and each letter makes one small move as it fills — the V stretches, the E's bars slide like lock
+       tumblers, the Y folds into a key, the L looks back, the top of the O flips like a coin. It holds,
+       fades back to faint, and loops every 6 s. When loading ends, the veil and the logo fade away together
+       (the logo scaling up slightly), leaving the site at full brightness.
+       First visit: one pass, then "Where mystery meets style", then it leaves.
+       Later visits and page changes: the same chain, quicker. -->
   <div class="loader is-intro" id="loader" aria-hidden="true">
-    <span class="sweep">
-      <span class="sweep__layer sweep__layer--dim"><svg class="sweep__mark" focusable="false"><use href="#wordmark"/></svg><span class="sweep__line"></span></span>
-      <span class="sweep__layer sweep__layer--lit"><svg class="sweep__mark" focusable="false"><use href="#wordmark"/></svg><span class="sweep__line"></span></span>
-    </span>
+    <div class="loader__veil"></div>
+    <div class="loader__stage">
+    <span class="vl" aria-hidden="true"><svg class="vl__svg vl__svg--dim" viewBox="-30 -70 1129 240" preserveAspectRatio="xMidYMid meet" focusable="false"><g class="vl-v"><polygon points="0,0 18,0 79,83 140,0 158,0 88,100 70,100"/></g><rect class="vl-e vl-e1" x="254" y="0" width="125" height="15"/><rect class="vl-e vl-e2" x="254" y="42.5" width="125" height="15"/><rect class="vl-e vl-e3" x="254" y="85" width="125" height="15"/><polygon class="vl-ya" points="472,0 492,0 546.6,44.5 546.6,55.5 538.5,55.5"/><polygon class="vl-yb" points="600,0 620,0 553.5,55.5 545.4,55.5 545.4,44.5"/><rect class="vl-ys" x="538.5" y="54" width="15" height="46"/><polygon class="vl-l" points="710,0 725,0 725,85 833,85 833,100 710,100"/><path class="vl-ot" d="M933.5 39 V29.5 A22 22 0 0 1 955.5 7.5 H1039.5 A22 22 0 0 1 1061.5 29.5 V39"/><path class="vl-ob" d="M933.5 57 V70.5 A22 22 0 0 0 955.5 92.5 H1039.5 A22 22 0 0 0 1061.5 70.5 V57"/></svg><svg class="vl__svg vl__svg--lit" viewBox="-30 -70 1129 240" preserveAspectRatio="xMidYMid meet" focusable="false"><g class="vl-v"><polygon points="0,0 18,0 79,83 140,0 158,0 88,100 70,100"/></g><rect class="vl-e vl-e1" x="254" y="0" width="125" height="15"/><rect class="vl-e vl-e2" x="254" y="42.5" width="125" height="15"/><rect class="vl-e vl-e3" x="254" y="85" width="125" height="15"/><polygon class="vl-ya" points="472,0 492,0 546.6,44.5 546.6,55.5 538.5,55.5"/><polygon class="vl-yb" points="600,0 620,0 553.5,55.5 545.4,55.5 545.4,44.5"/><rect class="vl-ys" x="538.5" y="54" width="15" height="46"/><polygon class="vl-l" points="710,0 725,0 725,85 833,85 833,100 710,100"/><path class="vl-ot" d="M933.5 39 V29.5 A22 22 0 0 1 955.5 7.5 H1039.5 A22 22 0 0 1 1061.5 29.5 V39"/><path class="vl-ob" d="M933.5 57 V70.5 A22 22 0 0 0 955.5 92.5 H1039.5 A22 22 0 0 0 1061.5 70.5 V57"/></svg></span>
+    <p class="loader__tag latin">Where mystery meets style</p>
+    </div>
   </div>
   <noscript><style>.loader { display: none !important; }</style></noscript>
-  <script>setTimeout(function () { var l = document.getElementById('loader'); if (l && !l.hidden && !l.classList.contains('is-leaving')) l.hidden = true; }, 7000);</script>
+  <script>setTimeout(function () { var l = document.getElementById('loader'); if (l && !l.hidden && !l.classList.contains('is-leaving')) l.hidden = true; }, 12000);</script>
 
   <header class="bar" id="bar">
     <nav class="bar__nav" aria-label="Main">
@@ -53,7 +59,7 @@
       <a href="#sweaters" data-i18n="nav.sweaters" data-route="sweaters">السويترات</a>
     </nav>
     <a class="bar__mark" href="#top" aria-label="VEYLO">
-      <svg class="wm" aria-hidden="true"><use href="#wordmark"/></svg>
+      <svg class="wm" viewBox="0 0 1069 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#wordmark"/></svg>
     </a>
     <div class="bar__tools">
       <button class="lang" id="lang-toggle" type="button">EN</button>
@@ -168,7 +174,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 </div>
 
-<script src="app.js"></script>
-<script src="checkout.js"></script>
+<script src="app.js?v=202609280157"></script>
+<script src="checkout.js?v=202609280157"></script>
 </body>
 </html>
