@@ -154,18 +154,16 @@ h2 { font-size: clamp(28px, 3.4vw, 42px); }
    -------------------------------------------------------------------------- */
 .bar {
   position: sticky;
-  top: env(safe-area-inset-top, 0px);
+  top: 0;                                   /* sticks to the very top, status-bar strip included */
   z-index: 50;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 16px;
   min-height: var(--bar-h);
-  padding-block: 10px;
+  padding-block: calc(env(safe-area-inset-top, 0px) + 10px) 10px;
   padding-inline: var(--gutter);
-  background: rgba(8, 7, 6, .86);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  background: var(--ink);                   /* solid: nothing on the page shows through while scrolling */
   border-bottom: 1px solid transparent;
   transition: border-color .5s var(--ease);
 }
@@ -313,6 +311,55 @@ h2 { font-size: clamp(28px, 3.4vw, 42px); }
   gap: clamp(88px, 11vw, 160px);
   padding-block-end: clamp(100px, 12vw, 170px);
 }
+
+/* Category entry: the banner, with its title, line and link as live text
+   over the empty side of the photo. Sizes follow the banner's own width. */
+.entry { position: relative; max-width: 1600px; margin: 0 auto; container-type: inline-size; }
+.entry__copy {
+  position: absolute;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  gap: 1.1cqw;
+  text-align: start;
+}
+.entry__title {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 500;
+  line-height: 1.2;
+  font-size: clamp(20px, 2.6vw, 44px);
+  font-size: clamp(20px, 2.6cqw, 44px);
+  color: var(--bone);
+}
+.entry__lede {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 300;
+  line-height: 1.5;
+  font-size: clamp(13px, 1.45vw, 24px);
+  font-size: clamp(13px, 1.45cqw, 24px);
+  color: rgba(235, 230, 222, .82);
+}
+.entry__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  margin-top: 2.4cqw;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(235, 230, 222, .7);
+  font-size: clamp(12px, .95vw, 15px);
+  font-size: clamp(12px, .95cqw, 15px);
+  color: var(--bone);
+  transition: color .3s var(--ease), border-color .3s var(--ease);
+}
+.entry__cta svg { width: 34px; height: auto; flex: none; transition: transform .4s var(--ease); }
+.entry__cta:hover { color: var(--sand); border-color: var(--sand); }
+.entry__cta:hover svg { transform: translateX(4px); }
 
 /* Banner variants stack in the same frame and cross-fade */
 .layer {
@@ -689,6 +736,18 @@ h2 { font-size: clamp(28px, 3.4vw, 42px); }
   .bar__mark { justify-self: start; width: 104px; }
 
   .hero__cta { display: flex; padding-block: 22px 0; }
+
+  .entry__copy {
+    position: static;
+    inset: auto !important;
+    width: auto !important;
+    transform: none;
+    gap: 6px;
+    padding: 20px var(--gutter) 0;
+  }
+  .entry__title { font-size: 26px; }
+  .entry__lede { font-size: 15px; }
+  .entry__cta { align-self: flex-start; min-width: 220px; margin-top: 14px; font-size: 14px; }
   .hero__cta .btn { flex: 1; }
 
   .emb { letter-spacing: .24em; padding-inline-start: .24em; }

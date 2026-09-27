@@ -102,9 +102,10 @@
 
   /* ------------------------------------------------------------------------
      Catalogue
-     CATEGORIES: each opens with its original banner(s), uncropped. More than
-     one banner cross-fades slowly. `hotspot` is the button printed inside the
-     banner, as [left%, top%, width%, height%], so that printed button works.
+     CATEGORIES: each opens with its banner (original image, uncropped). More
+     than one banner cross-fades slowly. The banner's text — title, line and
+     link — is live page text laid over the empty side of the photo
+     (`side`, as a fraction of the banner width; on phones it sits below).
      ------------------------------------------------------------------------ */
   const CATEGORIES = [
     {
@@ -112,20 +113,22 @@
       anchor: 'hoodies',
       eyebrow: 'Pullovers',
       title: { ar: 'البلوفرات', en: 'Pullovers' },
+      lede: { ar: 'تفاصيل تكمل أسلوبك', en: 'Details that complete your style' },
       cta: { ar: 'اكتشف البلوفرات', en: 'Discover the pullovers' },
+      side: 'left', inset: 5.3, top: 50, width: 21,
       banners: [
         {
-          img: 'img/hoodie-black.jpg', w: 1600, h: 533, hotspot: [5, 56, 13.5, 9],
+          img: 'img/hoodie-black.jpg', w: 1600, h: 533,
           alt: {
-            ar: 'ظهر بلوفر أسود مغسول مطرّز عليه Where Mystery Meets Style، بجانب عنوان «البلوفرات — تفاصيل تكمل أسلوبك»',
-            en: 'The back of a washed-black pullover embroidered “Where Mystery Meets Style”, beside the Arabic heading “Pullovers — details that complete your style”',
+            ar: 'ظهر بلوفر أسود مغسول مطرّز عليه Where Mystery Meets Style في ممر حجري معتم',
+            en: 'The back of a washed-black pullover embroidered “Where Mystery Meets Style”, in a dark stone passage',
           },
         },
         {
-          img: 'img/hoodie-sand.jpg', w: 1600, h: 533, hotspot: [7.2, 58.5, 12.2, 8.5],
+          img: 'img/hoodie-sand.jpg', w: 1600, h: 533,
           alt: {
-            ar: 'ظهر بلوفر رملي مطرّز عليه Where Mystery Meets Style، بجانب عنوان «البلوفرات — تفاصيل تكمل أسلوبك»',
-            en: 'The back of a sand pullover embroidered “Where Mystery Meets Style”, beside the Arabic heading “Pullovers — details that complete your style”',
+            ar: 'ظهر بلوفر رملي مطرّز عليه Where Mystery Meets Style في ممر حجري معتم',
+            en: 'The back of a sand pullover embroidered “Where Mystery Meets Style”, in a dark stone passage',
           },
         },
       ],
@@ -135,13 +138,15 @@
       anchor: 'sweaters',
       eyebrow: 'Sweaters',
       title: { ar: 'السويترات', en: 'Sweaters' },
+      lede: { ar: 'راحة تدوم .. في كل خطوة', en: 'Comfort that lasts, every step' },
       cta: { ar: 'اكتشف السويترات', en: 'Discover the sweaters' },
+      side: 'right', inset: 2.5, top: 53, width: 20,
       banners: [
         {
-          img: 'img/sweater.jpg', w: 1600, h: 800, hotspot: [82.8, 60, 15, 6.5],
+          img: 'img/sweater.jpg', w: 1600, h: 800,
           alt: {
-            ar: 'سويتر بني مغسول بشعار فيلو مطرّز على الصدر، بجانب عنوان «السويترات — راحة تدوم في كل خطوة»',
-            en: 'A washed-brown sweater with the VEYLO wordmark embroidered on the chest, beside the Arabic heading “Sweaters — lasting comfort, every step”',
+            ar: 'سويتر بني مغسول بشعار فيلو مطرّز على الصدر',
+            en: 'A washed-brown sweater with the VEYLO wordmark embroidered on the chest',
           },
         },
       ],
@@ -351,7 +356,6 @@
   /* ------------------------------------------------------------------------
      Collection
      ------------------------------------------------------------------------ */
-  const hotspotStyle = ([l, tp, w, h]) => `left:${l}%;top:${tp}%;width:${w}%;height:${h}%`;
 
   const pieceName = (p, c) => `${L(p.name)} ${L(c.alias)}`;
   const arOf = (c) => (c.photo.w / c.photo.h).toFixed(4);
@@ -381,8 +385,8 @@
     const layers = cat.banners.map((b, i) => `
       <div class="layer${i === 0 ? ' is-active' : ''}">
         <img src="${b.img}" width="${b.w}" height="${b.h}" alt="${esc(L(b.alt))}" loading="lazy">
-        <a class="hotspot" href="#${cat.anchor}-list" style="${hotspotStyle(b.hotspot)}" aria-label="${esc(L(cat.cta))}"></a>
       </div>`).join('');
+    const place = `${cat.side}:${cat.inset}%;top:${cat.top}%;width:${cat.width}%`;
     // one row per style: its colourways side by side, all at the same height
     const rows = styles.map((p) => {
       const sum = p.colors.reduce((n, c) => n + c.photo.w / c.photo.h, 0);
@@ -391,7 +395,17 @@
 
     return `
     <section class="cat" id="${cat.anchor}" aria-labelledby="${cat.id}-title">
-      <figure class="banner" data-cycle="${cat.banners.length > 1}" style="aspect-ratio:${first.w} / ${first.h}">${layers}</figure>
+      <div class="entry">
+        <figure class="banner" data-cycle="${cat.banners.length > 1}" style="aspect-ratio:${first.w} / ${first.h}">${layers}</figure>
+        <div class="entry__copy" style="${place}">
+          <p class="entry__title">${esc(L(cat.title))}</p>
+          <p class="entry__lede">${esc(L(cat.lede))}</p>
+          <a class="entry__cta" href="#${cat.anchor}-list">
+            <span>${esc(L(cat.cta))}</span>
+            <svg aria-hidden="true" viewBox="0 0 40 12"><path d="M0 6h38M33 1l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+          </a>
+        </div>
+      </div>
       <div class="wrap cat__body" id="${cat.anchor}-list">
         <header class="cat__head">
           <div>
