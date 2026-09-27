@@ -38,6 +38,10 @@
       'slide.pay': 'طرق الدفع',
       'collection.title': 'المجموعة',
       'card.photoSoon': 'الصورة قريباً',
+      'cat.all': 'الكل',
+      'cat.filter': 'تصفية حسب الموديل',
+      'cat.crumbs': 'مسار الصفحة',
+      'cat.other': 'تسوّق {name}',
       'card.view': 'عرض القطعة',
       'piece.details': 'التفاصيل',
       'piece.color': 'اللون',
@@ -76,6 +80,10 @@
       'slide.pay': 'Payment methods',
       'collection.title': 'Pullovers & sweaters',
       'card.photoSoon': 'Photo coming',
+      'cat.all': 'All',
+      'cat.filter': 'Filter by style',
+      'cat.crumbs': 'Breadcrumb',
+      'cat.other': 'Shop {name}',
       'card.view': 'View piece',
       'piece.details': 'Details',
       'piece.color': 'Colour',
@@ -115,7 +123,6 @@
   const CATEGORIES = [
     {
       id: 'pullovers',
-      anchor: 'hoodies',
       eyebrow: 'Pullovers',
       title: { ar: 'البلوفرات', en: 'Pullovers' },
       lede: { ar: 'تفاصيل تكمل أسلوبك', en: 'Details that complete your style' },
@@ -140,7 +147,6 @@
     },
     {
       id: 'sweaters',
-      anchor: 'sweaters',
       eyebrow: 'Sweaters',
       title: { ar: 'السويترات', en: 'Sweaters' },
       lede: { ar: 'راحة تدوم .. في كل خطوة', en: 'Comfort that lasts, every step' },
@@ -294,7 +300,11 @@
 
   const missingPhotos = new Set();   // photos that failed to load, so re-renders don't retry them
 
-  const t = (k) => I18N[lang][k] ?? I18N.ar[k] ?? k;
+  const t = (k, vars) => {
+    let v = I18N[lang][k] ?? I18N.ar[k] ?? k;
+    if (vars) Object.keys(vars).forEach((n) => { v = v.replace(`{${n}}`, vars[n]); });
+    return v;
+  };
   const L = (o) => o[lang] ?? o.ar;
   const money = (n) => {
     const v = n.toLocaleString('en-US');
@@ -331,15 +341,17 @@
   const toastEl = $('#toast');
 
   /* ------------------------------------------------------------------------
-     Product board — the original collection image, fitted whole
+     Images: every photo waits on a shimmering skeleton and fades in when it
+     has loaded. A product photo that fails shows a placeholder instead.
      ------------------------------------------------------------------------ */
   function boardHTML(c) {
     const ph = c.photo;
-    const img = missingPhotos.has(ph.src)
+    const missing = missingPhotos.has(ph.src);
+    const img = missing
       ? ''
-      : `<img class="photo__img" data-photo src="${esc(ph.src)}" width="${ph.w}" height="${ph.h}" alt="${esc(L(c.alt))}" loading="lazy">`;
+      : `<img class="photo__img fade-img" data-photo src="${esc(ph.src)}" width="${ph.w}" height="${ph.h}" alt="${esc(L(c.alt))}" loading="lazy">`;
     return `
-      <span class="photo" style="--c:${c.hex}">
+      <span class="photo skel-host${missing ? ' is-missing' : ''}" style="--c:${c.hex}">
         <span class="photo__ph" aria-hidden="true">
           <svg><use href="#i-model"/></svg>
           <span class="photo__note">${esc(t('card.photoSoon'))}</span>
@@ -348,25 +360,36 @@
       </span>`;
   }
 
-  // load/error don't bubble, so listen in the capture phase for every board on the page
+  const markLoaded = (img) => img.classList.add('is-loaded');
+  // load/error don't bubble, so listen in the capture phase for every image on the page
   document.addEventListener('load', (e) => {
-    const img = e.target;
-    if (img instanceof HTMLImageElement && img.hasAttribute('data-photo')) img.parentElement.classList.add('has-photo');
+    if (e.target instanceof HTMLImageElement && e.target.classList.contains('fade-img')) markLoaded(e.target);
   }, true);
   document.addEventListener('error', (e) => {
     const img = e.target;
-    if (img instanceof HTMLImageElement && img.hasAttribute('data-photo')) {
+    if (!(img instanceof HTMLImageElement)) return;
+    if (img.hasAttribute('data-photo')) {
       missingPhotos.add(img.getAttribute('src'));
+      img.parentElement.classList.add('is-missing');
       img.remove();
+    } else if (img.classList.contains('fade-img')) {
+      markLoaded(img);                                  // stop the shimmer either way
     }
   }, true);
+  const sweepLoaded = (scope = document) => $$('img.fade-img', scope).forEach((img) => {
+    if (img.complete && img.naturalWidth) markLoaded(img);
+  });
 
   /* ------------------------------------------------------------------------
-     Collection
+     Collection. Two ways to the pieces: on the home page, every category
+     shows its banner and all its pieces; the banner's link also opens the
+     category's own page (#pullovers, #sweaters).
      ------------------------------------------------------------------------ */
-
   const pieceName = (p, c) => `${L(p.name)} ${L(c.alias)}`;
   const arOf = (c) => (c.photo.w / c.photo.h).toFixed(4);
+  const stylesOf = (cat) => PRODUCTS.filter((p) => p.category === cat.id);
+  const piecesOf = (cat) => stylesOf(cat).reduce((n, p) => n + p.colors.length, 0);
+  const arrowSVG = '<svg aria-hidden="true" viewBox="0 0 40 12"><path d="M0 6h38M33 1l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1"/></svg>';
 
   function cardHTML(p, c) {
     const label = `${pieceName(p, c)} — ${L(p.kind)}, ${L(c.name)}, ${money(p.price)}`;
@@ -386,56 +409,173 @@
       </li>`;
   }
 
-  function categoryHTML(cat) {
-    const styles = PRODUCTS.filter((p) => p.category === cat.id);
-    const pieces = styles.reduce((n, p) => n + p.colors.length, 0);
+  // Same layout as a real card, as shimmering blocks
+  function skeletonCard(c) {
+    return `
+      <li class="card card--skel" style="--ar:${arOf(c)}" aria-hidden="true">
+        <span class="photo skel"></span>
+        <span class="card__meta"><span class="skel skel-line"></span><span class="skel skel-line skel-line--short"></span></span>
+      </li>`;
+  }
+
+  // one row per style: its colourways side by side, all at the same height
+  function rowsHTML(cat, filter, skeleton) {
+    return stylesOf(cat).filter((p) => !filter || p.id === filter).map((p) => {
+      const sum = p.colors.reduce((n, c) => n + c.photo.w / c.photo.h, 0);
+      const cards = p.colors.map((c) => (skeleton ? skeletonCard(c) : cardHTML(p, c))).join('');
+      return `<ul class="row" style="--sum:${sum.toFixed(4)}">${cards}</ul>`;
+    }).join('');
+  }
+
+  function entryHTML(cat, { cta }) {
     const first = cat.banners[0];
+    const frame = cat.frame || first;
     const layers = cat.banners.map((b, i) => `
       <div class="layer${i === 0 ? ' is-active' : ''}">
-        <img src="${b.img}" width="${b.w}" height="${b.h}" alt="${esc(L(b.alt))}" loading="lazy"${b.mfocus ? ` style="--mfocus:${b.mfocus}"` : ''}>
+        <img class="fade-img" src="${b.img}" width="${b.w}" height="${b.h}" alt="${esc(L(b.alt))}"${b.mfocus ? ` style="--mfocus:${b.mfocus}"` : ''}>
       </div>`).join('');
     const place = `${cat.side}:${cat.inset}%;top:${cat.top}%;width:${cat.width}%`;
-    // one row per style: its colourways side by side, all at the same height
-    const rows = styles.map((p) => {
-      const sum = p.colors.reduce((n, c) => n + c.photo.w / c.photo.h, 0);
-      return `<ul class="row" style="--sum:${sum.toFixed(4)}">${p.colors.map((c) => cardHTML(p, c)).join('')}</ul>`;
-    }).join('');
-
     return `
-    <section class="cat" id="${cat.anchor}" aria-labelledby="${cat.id}-title">
       <div class="entry">
-        <figure class="banner${cat.frame ? ' banner--framed' : ''}" data-cycle="${cat.banners.length > 1}" style="aspect-ratio:${(cat.frame || first).w} / ${(cat.frame || first).h}${cat.frame ? `;--focus:${cat.frame.focus}` : ''}">${layers}</figure>
+        <figure class="banner skel-host${cat.frame ? ' banner--framed' : ''}" data-cycle="${cat.banners.length > 1}" style="aspect-ratio:${frame.w} / ${frame.h}${cat.frame ? `;--focus:${cat.frame.focus}` : ''}">${layers}</figure>
         <div class="entry__copy" style="${place}">
           <p class="entry__title">${esc(L(cat.title))}</p>
           <p class="entry__lede">${esc(L(cat.lede))}</p>
-          <a class="entry__cta" href="#${cat.anchor}-list">
-            <span>${esc(L(cat.cta))}</span>
-            <svg aria-hidden="true" viewBox="0 0 40 12"><path d="M0 6h38M33 1l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1"/></svg>
-          </a>
+          ${cta ? `<a class="entry__cta" href="#${cat.id}"><span>${esc(L(cat.cta))}</span>${arrowSVG}</a>` : ''}
         </div>
-      </div>
-      <div class="wrap cat__body" id="${cat.anchor}-list">
-        <header class="cat__head">
-          <div>
-            <p class="eyebrow latin">${esc(cat.eyebrow)}</p>
-            <h3 class="cat__title" id="${cat.id}-title">${esc(L(cat.title))}</h3>
-          </div>
-          <p class="cat__count">${countLabel(pieces)}</p>
-        </header>
-        <div class="rows">${rows}</div>
-      </div>
-    </section>`;
+      </div>`;
   }
 
+  // Home page: each category's banner (its link opens the category page), then all its pieces
   function renderCollection() {
-    piecesEl.innerHTML = CATEGORIES.map(categoryHTML).join('');
+    piecesEl.innerHTML = CATEGORIES.map((cat) => `
+      <section class="cat" id="entry-${cat.id}" aria-labelledby="home-${cat.id}-title">
+        ${entryHTML(cat, { cta: true })}
+        <div class="wrap cat__body">
+          <header class="cat__head">
+            <div>
+              <p class="eyebrow latin">${esc(cat.eyebrow)}</p>
+              <h3 class="cat__title" id="home-${cat.id}-title">${esc(L(cat.title))}</h3>
+            </div>
+            <p class="cat__count">${countLabel(piecesOf(cat))}</p>
+          </header>
+          <div class="rows">${rowsHTML(cat, '', false)}</div>
+        </div>
+      </section>`).join('');
+    sweepLoaded(piecesEl);
     watchCycles();
   }
 
-  piecesEl.addEventListener('click', (e) => {
+  /* ------------------------------------------------------------------------
+     Category page
+     ------------------------------------------------------------------------ */
+  const viewHome = $('#view-home');
+  const viewCat = $('#view-category');
+  let pageCat = null;          // the category whose page is showing
+  let pageFilter = '';         // style id, or '' for all
+  let pageSkeleton = false;
+
+  function renderCategoryPage() {
+    const cat = CATEGORIES.find((c) => c.id === pageCat);
+    if (!cat) return;
+    const styles = stylesOf(cat);
+    const other = CATEGORIES.find((c) => c.id !== cat.id);
+    const chips = styles.length > 1 ? `
+      <div class="chips" role="group" aria-label="${esc(t('cat.filter'))}">
+        <button type="button" class="chip" data-filter="" aria-pressed="${!pageFilter}">${esc(t('cat.all'))}</button>
+        ${styles.map((p) => `<button type="button" class="chip" data-filter="${p.id}" aria-pressed="${pageFilter === p.id}">${esc(L(p.name))}</button>`).join('')}
+      </div>` : '';
+    viewCat.innerHTML = `
+      <section class="catpage" aria-labelledby="catpage-title">
+        <nav class="wrap crumbs" aria-label="${esc(t('cat.crumbs'))}">
+          <a href="#collection">${esc(t('nav.collection'))}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(L(cat.title))}</span>
+        </nav>
+        ${entryHTML(cat, { cta: false })}
+        <div class="wrap catpage__body">
+          <header class="cat__head">
+            <div>
+              <p class="eyebrow latin">${esc(cat.eyebrow)}</p>
+              <h1 class="cat__title" id="catpage-title" tabindex="-1">${esc(L(cat.title))}</h1>
+            </div>
+            <p class="cat__count">${countLabel(piecesOf(cat))}</p>
+          </header>
+          ${chips}
+          <div class="rows${pageSkeleton ? ' is-skeleton' : ''}" aria-busy="${pageSkeleton}">${rowsHTML(cat, pageFilter, pageSkeleton)}</div>
+          ${other ? `<a class="next-cat" href="#${other.id}"><span class="eyebrow latin">${esc(other.eyebrow)}</span><span class="next-cat__title">${esc(t('cat.other', { name: L(other.title) }))}</span>${arrowSVG}</a>` : ''}
+        </div>
+      </section>`;
+    sweepLoaded(viewCat);
+    watchCycles();
+  }
+
+  const decodeAll = (srcs) => Promise.all(srcs.map((src) => new Promise((res) => {
+    const im = new Image();
+    im.onload = im.onerror = () => res();
+    im.src = src;
+  })));
+
+  async function showCategory(id) {
+    const fresh = pageCat !== id || viewCat.hidden;
+    pageCat = id;
+    if (fresh) pageFilter = '';
+    viewHome.hidden = true;
+    viewCat.hidden = false;
+    document.title = `${L(CATEGORIES.find((c) => c.id === id).title)} · VEYLO`;
+    markNav(id);
+    if (!fresh) { renderCategoryPage(); return; }
+    const { covered, opening } = loader.flash();          // the VEYLO loader covers the switch
+    await covered;
+    pageSkeleton = true;
+    renderCategoryPage();                                 // skeleton cards first, under the loader
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    const cat = CATEGORIES.find((c) => c.id === id);
+    const photos = stylesOf(cat).flatMap((p) => p.colors.map((c) => c.photo.src));
+    await Promise.all([opening, Promise.race([decodeAll(photos), new Promise((r) => setTimeout(r, 2500))])]);
+    await new Promise((r) => setTimeout(r, reduceMotion ? 0 : 700));   // the skeleton shows as the room opens
+    if (pageCat !== id) return;
+    pageSkeleton = false;
+    renderCategoryPage();
+    $('#catpage-title')?.focus({ preventScroll: true });
+  }
+
+  function showHome(anchor) {
+    const wasCat = !viewCat.hidden;
+    viewCat.hidden = true;
+    viewHome.hidden = false;
+    pageCat = null;
+    document.title = 'VEYLO Store';
+    markNav(null);
+    const target = anchor && document.getElementById(anchor);
+    if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: wasCat ? 'instant' : 'smooth' }));
+    else if (wasCat) window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function markNav(id) {
+    $$('.bar__nav a[data-route]').forEach((a) => {
+      if (a.dataset.route === id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+  }
+
+  function route() {
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (window.VEYLO_CHECKOUT?.isOpen?.()) window.VEYLO_CHECKOUT.close();
+    if (CATEGORIES.some((c) => c.id === h)) showCategory(h);
+    else showHome(h);
+  }
+  window.addEventListener('hashchange', route);
+
+  viewCat.addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-filter]');
+    if (!chip) return;
+    pageFilter = chip.dataset.filter;
+    renderCategoryPage();
+    $(`[data-filter="${pageFilter}"]`, viewCat)?.focus();
+  });
+
+  [piecesEl, viewCat].forEach((el) => el.addEventListener('click', (e) => {
     const card = e.target.closest('[data-open]');
     if (card) openQuickView(card.dataset.open);
-  });
+  }));
 
   // Categories with more than one banner cross-fade between them while on screen
   const cycleObserver = new IntersectionObserver((entries) => {
@@ -443,13 +583,13 @@
   });
   function watchCycles() {
     cycleObserver.disconnect();
-    $$('[data-cycle="true"]', piecesEl).forEach((f) => cycleObserver.observe(f));
+    $$('.entry [data-cycle="true"]').forEach((f) => cycleObserver.observe(f));
   }
   if (!reduceMotion) {
     setInterval(() => {
       if (document.hidden) return;
-      $$('[data-cycle="true"][data-onscreen="true"]', piecesEl).forEach((f) => {
-        if (f.matches(':hover') || f.contains(document.activeElement)) return;
+      $$('.entry [data-cycle="true"][data-onscreen="true"]').forEach((f) => {
+        if (f.closest('[hidden]') || f.matches(':hover') || f.contains(document.activeElement)) return;
         const layers = $$('.layer', f);
         const i = layers.findIndex((l) => l.classList.contains('is-active'));
         layers[i].classList.remove('is-active');
@@ -457,6 +597,47 @@
       });
     }, 6000);
   }
+
+  /* ------------------------------------------------------------------------
+     The VEYLO loader. On a first visit the wordmark assembles letter by
+     letter, a beam of light crosses it and the room opens from the centre.
+     Later visits, page changes and payment use a short version.
+     ------------------------------------------------------------------------ */
+  const loader = (() => {
+    const el = $('#loader');
+    let hideTimer = 0;
+    const leave = () => {
+      el.classList.add('is-leaving');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => { el.hidden = true; el.className = 'loader'; }, reduceMotion ? 50 : 900);
+    };
+    return {
+      // first paint of the site
+      intro() {
+        let first = true;
+        try { first = !localStorage.getItem('veylo.visited'); localStorage.setItem('veylo.visited', '1'); } catch { /* storage unavailable: treat as a first visit */ }
+        el.hidden = false;
+        el.className = `loader ${first ? 'is-intro' : 'is-quick'}`;
+        const minTime = reduceMotion ? 500 : first ? 2600 : 700;
+        const loaded = document.readyState === 'complete' ? Promise.resolve() : new Promise((r) => window.addEventListener('load', r, { once: true }));
+        Promise.all([new Promise((r) => setTimeout(r, minTime)), Promise.race([loaded, new Promise((r) => setTimeout(r, 4200))])]).then(leave);
+      },
+      // a short cover for switching pages: `covered` once the screen is covered,
+      // `opening` once it starts to open again
+      flash() {
+        if (!el.hidden && !el.classList.contains('is-leaving')) {
+          const soon = new Promise((r) => setTimeout(r, 300));
+          return { covered: soon, opening: soon };
+        }
+        clearTimeout(hideTimer);
+        el.hidden = false;
+        el.className = 'loader is-quick is-flash';
+        const covered = new Promise((r) => setTimeout(r, reduceMotion ? 0 : 200));
+        const opening = covered.then(() => new Promise((r) => setTimeout(() => { leave(); r(); }, reduceMotion ? 0 : 550)));
+        return { covered, opening };
+      },
+    };
+  })();
 
   /* ------------------------------------------------------------------------
      Quick view — the whole board large, then details, colour, size
@@ -491,7 +672,9 @@
         <span class="sr">${esc(t('bag.close'))}</span>
       </button>
       <figure class="qv__photo">
-        <img src="${esc(color.photo.src)}" width="${color.photo.w}" height="${color.photo.h}" alt="${esc(L(color.alt))}">
+        <span class="qv__frame skel-host" style="aspect-ratio:${color.photo.w} / ${color.photo.h};--qar:${(color.photo.w / color.photo.h).toFixed(4)}">
+          <img class="fade-img" src="${esc(color.photo.src)}" width="${color.photo.w}" height="${color.photo.h}" alt="${esc(L(color.alt))}">
+        </span>
       </figure>
       <div class="qv__body">
         <div class="qv__info">
@@ -716,6 +899,7 @@
     langBtn.setAttribute('aria-label', t('lang.switch'));
 
     renderCollection();
+    if (pageCat) renderCategoryPage();
     renderBag();
     if (qv.open) renderQuickView();
     langListeners.forEach((fn) => fn(lang));
@@ -866,4 +1050,8 @@
   }
 
   applyLang();
+  sweepLoaded();
+  loader.intro();
+  route();
+  window.VEYLO.loader = loader;
 })();

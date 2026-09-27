@@ -455,7 +455,11 @@
   }
 
   function processingHTML() {
-    return `<div class="co__proc" role="status"><span class="spinner" aria-hidden="true"></span><p>${esc(t('proc'))}</p></div>`;
+    return `
+      <div class="co__proc" role="status">
+        <span class="mini-loader" aria-hidden="true"><svg class="wm"><use href="#wordmark"/></svg><svg class="wm mini-loader__lit"><use href="#wordmark"/></svg></span>
+        <p>${esc(t('proc'))}</p>
+      </div>`;
   }
 
   function doneHTML() {
@@ -738,5 +742,5 @@
     if (sheet.open && sheetKind) openSheet(sheetKind);
   });
 
-  window.VEYLO_CHECKOUT = { open, close };
+  window.VEYLO_CHECKOUT = { open, close, isOpen: () => !root.hidden };
 })();

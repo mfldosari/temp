@@ -34,11 +34,33 @@
 
 <div class="site" id="site" dir="rtl" lang="ar">
 
+  <!-- LOADER: the wordmark assembles itself and a beam of light passes over it.
+       Full version on a first visit; a short one on later visits, page changes and payment. -->
+  <div class="loader is-intro" id="loader" aria-hidden="true">
+    <div class="loader__stage">
+      <svg class="loader__mark" viewBox="-6 -6 1081 112" focusable="false">
+        <polygon class="lv" points="0,0 18,0 79,83 140,0 158,0 88,100 70,100" fill="currentColor"/>
+        <rect class="le le1" x="254" y="0" width="125" height="15" fill="currentColor"/>
+        <rect class="le le2" x="254" y="42.5" width="125" height="15" fill="currentColor"/>
+        <rect class="le le3" x="254" y="85" width="125" height="15" fill="currentColor"/>
+        <polygon class="ly" points="472,0 492,0 546,44 600,0 620,0 553.5,55 553.5,100 538.5,100 538.5,55" fill="currentColor"/>
+        <polygon class="ll" points="710,0 725,0 725,85 833,85 833,100 710,100" fill="currentColor"/>
+        <path class="lo lo-top" d="M933.5 39 V29.5 A22 22 0 0 1 955.5 7.5 H1039.5 A22 22 0 0 1 1061.5 29.5 V39" fill="none" stroke="currentColor" stroke-width="15"/>
+        <path class="lo lo-bot" d="M933.5 57 V70.5 A22 22 0 0 0 955.5 92.5 H1039.5 A22 22 0 0 0 1061.5 70.5 V57" fill="none" stroke="currentColor" stroke-width="15"/>
+      </svg>
+      <span class="loader__beam"></span>
+      <span class="loader__rule"></span>
+      <p class="loader__tag latin">Where mystery meets style</p>
+    </div>
+  </div>
+  <noscript><style>.loader { display: none !important; }</style></noscript>
+  <script>setTimeout(function () { var l = document.getElementById('loader'); if (l && !l.hidden && !l.classList.contains('is-leaving')) l.hidden = true; }, 7000);</script>
+
   <header class="bar" id="bar">
     <nav class="bar__nav" aria-label="Main">
       <a href="#collection" data-i18n="nav.collection">المجموعة</a>
-      <a href="#hoodies" data-i18n="nav.hoodies">البلوفرات</a>
-      <a href="#sweaters" data-i18n="nav.sweaters">السويترات</a>
+      <a href="#pullovers" data-i18n="nav.hoodies" data-route="pullovers">البلوفرات</a>
+      <a href="#sweaters" data-i18n="nav.sweaters" data-route="sweaters">السويترات</a>
     </nav>
     <a class="bar__mark" href="#top" aria-label="VEYLO">
       <svg class="wm" aria-hidden="true"><use href="#wordmark"/></svg>
@@ -54,6 +76,7 @@
   </header>
 
   <main id="top">
+   <div id="view-home">
 
     <!-- HERO: the welcome and payment banners cross-fade in one frame, both shown whole.
          A soft light moves over them: it follows the pointer on a laptop and wanders on its own on phones. -->
@@ -61,11 +84,11 @@
       <h1 id="hero-title" class="sr" data-i18n="hero.title">أهلاً بك في فيلو — Welcome to VEYLO</h1>
       <figure class="banner banner--hero" id="hero-banner" style="aspect-ratio: 1600 / 600">
         <div class="slide is-active">
-          <img src="img/welcome.jpg" width="1600" height="600" alt="" data-i18n-alt="hero.alt">
+          <img class="fade-img" src="img/welcome.jpg" width="1600" height="600" alt="" data-i18n-alt="hero.alt">
           <a class="hotspot" href="#collection" style="left:11%; top:65.5%; width:13.4%; height:8.6%" aria-label="اكتشف المجموعة" data-i18n-aria="hero.cta"></a>
         </div>
         <div class="slide">
-          <img src="img/payment.jpg" width="1600" height="533" alt="" data-i18n-alt="pay.alt">
+          <img class="fade-img" src="img/payment.jpg" width="1600" height="533" alt="" data-i18n-alt="pay.alt">
         </div>
         <div class="glow" aria-hidden="true"></div>
       </figure>
@@ -92,7 +115,7 @@
       </div>
     </section>
 
-    <!-- COLLECTION: per category, the banner is the entry, then a grid of every piece. Rendered from CATEGORIES + PRODUCTS in app.js -->
+    <!-- COLLECTION: each category's banner and all its pieces; the banner's link opens that category's own page. Rendered by app.js -->
     <section class="collection" id="collection" aria-labelledby="collection-title">
       <div class="wrap sec-head">
         <p class="eyebrow latin">The collection</p>
@@ -101,6 +124,10 @@
       <div class="pieces" id="pieces"></div>
     </section>
 
+   </div>
+
+   <!-- CATEGORY PAGE (#pullovers, #sweaters): banner, style filter, every piece. Rendered by app.js -->
+   <div id="view-category" hidden></div>
   </main>
 
   <!-- CHECKOUT: rendered by checkout.js when the bag's checkout button is pressed (demo, end to end) -->
@@ -109,13 +136,13 @@
   <!-- FOOTER: the brand's stage visual, full-frame, with links beneath it -->
   <footer class="foot">
     <figure class="banner" style="aspect-ratio: 1600 / 640">
-      <img src="img/stage.jpg" width="1600" height="640" alt="" data-i18n-alt="stage.alt" loading="lazy">
+      <img class="fade-img" src="img/stage.jpg" width="1600" height="640" alt="" data-i18n-alt="stage.alt" loading="lazy">
       <div class="rays" aria-hidden="true"></div>
     </figure>
     <div class="wrap foot__row">
       <nav class="foot__nav" aria-label="Footer">
         <a href="#collection" data-i18n="nav.collection">المجموعة</a>
-        <a href="#hoodies" data-i18n="nav.hoodies">البلوفرات</a>
+        <a href="#pullovers" data-i18n="nav.hoodies">البلوفرات</a>
         <a href="#sweaters" data-i18n="nav.sweaters">السويترات</a>
       </nav>
       <p class="foot__fine"><span data-i18n="foot.made">صُنع في السعودية</span> · © 2026 VEYLO</p>
