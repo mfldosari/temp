@@ -114,6 +114,11 @@ h2 { font-size: clamp(28px, 3.4vw, 42px); }
   object-fit: contain;        /* the box already has the image's ratio; contain guarantees no cut */
 }
 
+/* A banner deliberately shown at another proportion (the sweater, to match the
+   pullover banners): fills the frame, showing the band chosen by --focus */
+.banner--framed > img,
+.banner--framed .layer img { object-fit: cover; object-position: var(--focus, 50% 50%); }
+
 /* An invisible link laid exactly over a button that is printed in the banner */
 .hotspot {
   position: absolute;

@@ -140,7 +140,10 @@
       title: { ar: 'السويترات', en: 'Sweaters' },
       lede: { ar: 'راحة تدوم .. في كل خطوة', en: 'Comfort that lasts, every step' },
       cta: { ar: 'اكتشف السويترات', en: 'Discover the sweaters' },
-      side: 'right', inset: 2.5, top: 53, width: 20,
+      side: 'right', inset: 2.5, top: 50, width: 20,
+      // shown in the same 1600 × 533 frame as the pullover banners; `focus`
+      // picks which band of the taller photo shows (the file itself is untouched)
+      frame: { w: 1600, h: 533, focus: '50% 34%' },
       banners: [
         {
           img: 'img/sweater.jpg', w: 1600, h: 800,
@@ -396,7 +399,7 @@
     return `
     <section class="cat" id="${cat.anchor}" aria-labelledby="${cat.id}-title">
       <div class="entry">
-        <figure class="banner" data-cycle="${cat.banners.length > 1}" style="aspect-ratio:${first.w} / ${first.h}">${layers}</figure>
+        <figure class="banner${cat.frame ? ' banner--framed' : ''}" data-cycle="${cat.banners.length > 1}" style="aspect-ratio:${(cat.frame || first).w} / ${(cat.frame || first).h}${cat.frame ? `;--focus:${cat.frame.focus}` : ''}">${layers}</figure>
         <div class="entry__copy" style="${place}">
           <p class="entry__title">${esc(L(cat.title))}</p>
           <p class="entry__lede">${esc(L(cat.lede))}</p>
