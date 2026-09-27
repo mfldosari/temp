@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VEYLO Store</title>
+<meta name="description" content="VEYLO — Where mystery meets style. Made in Saudi Arabia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;300;400;500&family=IBM+Plex+Sans+Arabic:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- The VEYLO wordmark, redrawn as vector from the brand logo for the header and the bag.
+     Every photograph on the page is the original file, shown full-frame and uncropped. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="wordmark" viewBox="0 0 1069 100">
+      <polygon points="0,0 18,0 79,83 140,0 158,0 88,100 70,100" fill="currentColor"/>
+      <rect x="254" y="0" width="125" height="15" fill="currentColor"/>
+      <rect x="254" y="42.5" width="125" height="15" fill="currentColor"/>
+      <rect x="254" y="85" width="125" height="15" fill="currentColor"/>
+      <polygon points="472,0 492,0 546,44 600,0 620,0 553.5,55 553.5,100 538.5,100 538.5,55" fill="currentColor"/>
+      <polygon points="710,0 725,0 725,85 833,85 833,100 710,100" fill="currentColor"/>
+      <!-- O: a rounded box split through the middle, with a gap on both the left and right sides -->
+      <path d="M933.5 39 V29.5 A22 22 0 0 1 955.5 7.5 H1039.5 A22 22 0 0 1 1061.5 29.5 V39" fill="none" stroke="currentColor" stroke-width="15"/>
+      <path d="M933.5 57 V70.5 A22 22 0 0 0 955.5 92.5 H1039.5 A22 22 0 0 0 1061.5 70.5 V57" fill="none" stroke="currentColor" stroke-width="15"/>
+    </symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5.5 8h13l-1 12.5h-11z M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="currentColor" stroke-width="1.2"/></symbol>
+    <symbol id="i-model" viewBox="0 0 100 125"><circle cx="50" cy="40" r="15" fill="none" stroke="currentColor" stroke-width="1"/><path d="M14 125 C14 88 30 70 50 70 C70 70 86 88 86 125" fill="none" stroke="currentColor" stroke-width="1"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.2"/></symbol>
+  </defs>
+</svg>
+
+<div class="site" id="site" dir="rtl" lang="ar">
+
+  <header class="bar" id="bar">
+    <nav class="bar__nav" aria-label="Main">
+      <a href="#collection" data-i18n="nav.collection">المجموعة</a>
+      <a href="#hoodies" data-i18n="nav.hoodies">البلوفرات</a>
+      <a href="#sweaters" data-i18n="nav.sweaters">السويترات</a>
+    </nav>
+    <a class="bar__mark" href="#top" aria-label="VEYLO">
+      <svg class="wm" aria-hidden="true"><use href="#wordmark"/></svg>
+    </a>
+    <div class="bar__tools">
+      <button class="lang" id="lang-toggle" type="button">EN</button>
+      <button class="bag-btn" id="bag-open" type="button" aria-controls="bag" aria-expanded="false">
+        <svg aria-hidden="true"><use href="#i-bag"/></svg>
+        <span class="sr" data-i18n="bag.open">افتح الحقيبة</span>
+        <span class="bag-btn__count" id="bag-count" data-empty="true">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- HERO: the brand's welcome banner, full-frame. The pointer carries a soft light across it. -->
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title" class="sr" data-i18n="hero.title">أهلاً بك في فيلو — Welcome to VEYLO</h1>
+      <figure class="banner banner--hero" id="hero-banner" style="aspect-ratio: 1600 / 600">
+        <img src="img/welcome.jpg" width="1600" height="600" alt="" data-i18n-alt="hero.alt">
+        <div class="glow" aria-hidden="true"></div>
+        <a class="hotspot" href="#collection" style="left:11%; top:65.5%; width:13.4%; height:8.6%" aria-label="اكتشف المجموعة" data-i18n-aria="hero.cta"></a>
+      </figure>
+      <p class="hero__hint latin" aria-hidden="true">Move to light the room</p>
+      <div class="hero__cta wrap">
+        <a class="btn btn--ghost" href="#collection" data-i18n="hero.cta">اكتشف المجموعة</a>
+      </div>
+    </section>
+
+    <!-- MANIFESTO: tone-on-tone, like the embroidery on the back of the hoodie -->
+    <section class="manifesto" id="story" aria-labelledby="story-title">
+      <div class="wrap manifesto__inner">
+        <h2 id="story-title" class="emb latin" data-emb>
+          <span class="sr">Where mystery meets style</span>
+          <span aria-hidden="true">WHERE MYSTERY</span>
+          <i class="emb__rule" aria-hidden="true"></i>
+          <span aria-hidden="true">MEETS STYLE</span>
+        </h2>
+        <p class="manifesto__origin latin">Made in Saudi Arabia</p>
+      </div>
+    </section>
+
+    <!-- COLLECTION: per category, the banner is the entry, then a grid of every piece. Rendered from CATEGORIES + PRODUCTS in app.js -->
+    <section class="collection" id="collection" aria-labelledby="collection-title">
+      <div class="wrap sec-head">
+        <p class="eyebrow latin">The collection</p>
+        <h2 id="collection-title" data-i18n="collection.title">المجموعة</h2>
+      </div>
+      <div class="pieces" id="pieces"></div>
+    </section>
+
+    <!-- PAYMENT: the brand's payment banner; its text is repeated for screen readers -->
+    <section class="pay" id="pay" aria-labelledby="pay-title">
+      <h2 id="pay-title" class="sr" data-i18n="pay.title">طرق دفع آمنة وسهلة</h2>
+      <p class="sr" data-i18n="pay.sub">اختر طريقة الدفع اللي تناسبك</p>
+      <ul class="sr">
+        <li>mada</li><li>tabby</li><li>Apple Pay</li><li>tamara</li>
+      </ul>
+      <figure class="banner" style="aspect-ratio: 1600 / 533">
+        <img src="img/payment.jpg" width="1600" height="533" alt="" data-i18n-alt="pay.alt" loading="lazy">
+      </figure>
+    </section>
+
+  </main>
+
+  <!-- FOOTER: the brand's stage visual, full-frame, with links beneath it -->
+  <footer class="foot">
+    <figure class="banner" style="aspect-ratio: 1600 / 640">
+      <img src="img/stage.jpg" width="1600" height="640" alt="" data-i18n-alt="stage.alt" loading="lazy">
+      <div class="rays" aria-hidden="true"></div>
+    </figure>
+    <div class="wrap foot__row">
+      <nav class="foot__nav" aria-label="Footer">
+        <a href="#collection" data-i18n="nav.collection">المجموعة</a>
+        <a href="#hoodies" data-i18n="nav.hoodies">البلوفرات</a>
+        <a href="#sweaters" data-i18n="nav.sweaters">السويترات</a>
+        <a href="#pay" data-i18n="nav.pay">الدفع</a>
+      </nav>
+      <p class="foot__fine"><span data-i18n="foot.made">صُنع في السعودية</span> · © 2026 VEYLO</p>
+    </div>
+  </footer>
+
+  <!-- QUICK VIEW: opens from a card in the grid -->
+  <dialog class="qv" id="qv" aria-labelledby="qv-title">
+    <div class="qv__inner" id="qv-inner"></div>
+  </dialog>
+
+  <!-- BAG DRAWER -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="bag" id="bag" aria-labelledby="bag-title" aria-hidden="true">
+    <header class="bag__head">
+      <h2 id="bag-title" data-i18n="bag.title">الحقيبة</h2>
+      <button class="icon-btn" id="bag-close" type="button">
+        <svg aria-hidden="true"><use href="#i-close"/></svg>
+        <span class="sr" data-i18n="bag.close">إغلاق</span>
+      </button>
+    </header>
+    <ul class="bag__items" id="bag-items"></ul>
+    <p class="bag__empty" id="bag-empty" data-i18n="bag.empty">الحقيبة فارغة. القطع تنتظرك في العتمة.</p>
+    <footer class="bag__foot">
+      <div class="bag__total"><span data-i18n="bag.subtotal">المجموع</span><strong id="bag-subtotal">0</strong></div>
+      <button class="btn btn--solid btn--block" id="checkout" type="button" data-i18n="bag.checkout">إتمام الطلب</button>
+    </footer>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
