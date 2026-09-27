@@ -55,14 +55,24 @@
 
   <main id="top">
 
-    <!-- HERO: the brand's welcome banner, full-frame. The pointer carries a soft light across it. -->
+    <!-- HERO: the welcome and payment banners cross-fade in one frame, both shown whole.
+         A soft light moves over them: it follows the pointer on a laptop and wanders on its own on phones. -->
     <section class="hero" id="hero" aria-labelledby="hero-title">
       <h1 id="hero-title" class="sr" data-i18n="hero.title">أهلاً بك في فيلو — Welcome to VEYLO</h1>
       <figure class="banner banner--hero" id="hero-banner" style="aspect-ratio: 1600 / 600">
-        <img src="img/welcome.jpg" width="1600" height="600" alt="" data-i18n-alt="hero.alt">
+        <div class="slide is-active">
+          <img src="img/welcome.jpg" width="1600" height="600" alt="" data-i18n-alt="hero.alt">
+          <a class="hotspot" href="#collection" style="left:11%; top:65.5%; width:13.4%; height:8.6%" aria-label="اكتشف المجموعة" data-i18n-aria="hero.cta"></a>
+        </div>
+        <div class="slide">
+          <img src="img/payment.jpg" width="1600" height="533" alt="" data-i18n-alt="pay.alt">
+        </div>
         <div class="glow" aria-hidden="true"></div>
-        <a class="hotspot" href="#collection" style="left:11%; top:65.5%; width:13.4%; height:8.6%" aria-label="اكتشف المجموعة" data-i18n-aria="hero.cta"></a>
       </figure>
+      <div class="hero__dots" id="hero-dots">
+        <button type="button" class="hero__dot" aria-pressed="true" data-slide="0" data-i18n-aria="slide.welcome" aria-label="الترحيب"></button>
+        <button type="button" class="hero__dot" aria-pressed="false" data-slide="1" data-i18n-aria="slide.pay" aria-label="طرق الدفع"></button>
+      </div>
       <p class="hero__hint latin" aria-hidden="true">Move to light the room</p>
       <div class="hero__cta wrap">
         <a class="btn btn--ghost" href="#collection" data-i18n="hero.cta">اكتشف المجموعة</a>
@@ -91,19 +101,10 @@
       <div class="pieces" id="pieces"></div>
     </section>
 
-    <!-- PAYMENT: the brand's payment banner; its text is repeated for screen readers -->
-    <section class="pay" id="pay" aria-labelledby="pay-title">
-      <h2 id="pay-title" class="sr" data-i18n="pay.title">طرق دفع آمنة وسهلة</h2>
-      <p class="sr" data-i18n="pay.sub">اختر طريقة الدفع اللي تناسبك</p>
-      <ul class="sr">
-        <li>mada</li><li>tabby</li><li>Apple Pay</li><li>tamara</li>
-      </ul>
-      <figure class="banner" style="aspect-ratio: 1600 / 533">
-        <img src="img/payment.jpg" width="1600" height="533" alt="" data-i18n-alt="pay.alt" loading="lazy">
-      </figure>
-    </section>
-
   </main>
+
+  <!-- CHECKOUT: rendered by checkout.js when the bag's checkout button is pressed (demo, end to end) -->
+  <section class="co" id="checkout" aria-labelledby="co-title" hidden></section>
 
   <!-- FOOTER: the brand's stage visual, full-frame, with links beneath it -->
   <footer class="foot">
@@ -116,7 +117,6 @@
         <a href="#collection" data-i18n="nav.collection">المجموعة</a>
         <a href="#hoodies" data-i18n="nav.hoodies">البلوفرات</a>
         <a href="#sweaters" data-i18n="nav.sweaters">السويترات</a>
-        <a href="#pay" data-i18n="nav.pay">الدفع</a>
       </nav>
       <p class="foot__fine"><span data-i18n="foot.made">صُنع في السعودية</span> · © 2026 VEYLO</p>
     </div>
@@ -126,6 +126,9 @@
   <dialog class="qv" id="qv" aria-labelledby="qv-title">
     <div class="qv__inner" id="qv-inner"></div>
   </dialog>
+
+  <!-- PAYMENT APPROVAL SHEET: bank verification, Apple Pay, tabby, tamara (all simulated) -->
+  <dialog class="sheet" id="pay-sheet" aria-labelledby="sheet-title"></dialog>
 
   <!-- BAG DRAWER -->
   <div class="scrim" id="scrim" hidden></div>
@@ -141,7 +144,7 @@
     <p class="bag__empty" id="bag-empty" data-i18n="bag.empty">الحقيبة فارغة. القطع تنتظرك في العتمة.</p>
     <footer class="bag__foot">
       <div class="bag__total"><span data-i18n="bag.subtotal">المجموع</span><strong id="bag-subtotal">0</strong></div>
-      <button class="btn btn--solid btn--block" id="checkout" type="button" data-i18n="bag.checkout">إتمام الطلب</button>
+      <button class="btn btn--solid btn--block" id="bag-checkout" type="button" data-i18n="bag.checkout">إتمام الطلب</button>
     </footer>
   </aside>
 
@@ -149,5 +152,6 @@
 </div>
 
 <script src="app.js"></script>
+<script src="checkout.js"></script>
 </body>
 </html>

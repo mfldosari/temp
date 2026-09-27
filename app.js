@@ -34,6 +34,8 @@
       'hero.title': 'أهلاً بك في فيلو — Welcome to VEYLO',
       'hero.alt': 'شعار فيلو وعبارة «أهلاً بك في فيلو» في غرفة حجرية معتمة، وصندوق فيلو الأسود على رف حجري يلامسه شعاع ضوء',
       'hero.cta': 'اكتشف المجموعة',
+      'slide.welcome': 'الترحيب',
+      'slide.pay': 'طرق الدفع',
       'collection.title': 'المجموعة',
       'card.photoSoon': 'الصورة قريباً',
       'card.view': 'عرض القطعة',
@@ -70,6 +72,8 @@
       'hero.title': 'Welcome to VEYLO',
       'hero.alt': 'The VEYLO wordmark and “Welcome to VEYLO” in a dim stone room; a black VEYLO box rests on a stone ledge in a shaft of light',
       'hero.cta': 'Discover the collection',
+      'slide.welcome': 'Welcome',
+      'slide.pay': 'Payment methods',
       'collection.title': 'Pullovers & sweaters',
       'card.photoSoon': 'Photo coming',
       'card.view': 'View piece',
@@ -105,7 +109,8 @@
      CATEGORIES: each opens with its banner (original image, uncropped). More
      than one banner cross-fades slowly. The banner's text — title, line and
      link — is live page text laid over the empty side of the photo
-     (`side`, as a fraction of the banner width; on phones it sits below).
+     (`side`, as a fraction of the banner width). On phones each banner shows
+     as a square slice centred on `mfocus`, with the text over its lower part.
      ------------------------------------------------------------------------ */
   const CATEGORIES = [
     {
@@ -118,14 +123,14 @@
       side: 'left', inset: 5.3, top: 50, width: 21,
       banners: [
         {
-          img: 'img/hoodie-black.jpg', w: 1600, h: 533,
+          img: 'img/hoodie-black.jpg', w: 1600, h: 533, mfocus: '78% 50%',
           alt: {
             ar: 'ظهر بلوفر أسود مغسول مطرّز عليه Where Mystery Meets Style في ممر حجري معتم',
             en: 'The back of a washed-black pullover embroidered “Where Mystery Meets Style”, in a dark stone passage',
           },
         },
         {
-          img: 'img/hoodie-sand.jpg', w: 1600, h: 533,
+          img: 'img/hoodie-sand.jpg', w: 1600, h: 533, mfocus: '88% 50%',
           alt: {
             ar: 'ظهر بلوفر رملي مطرّز عليه Where Mystery Meets Style في ممر حجري معتم',
             en: 'The back of a sand pullover embroidered “Where Mystery Meets Style”, in a dark stone passage',
@@ -146,7 +151,7 @@
       frame: { w: 1600, h: 533, focus: '50% 34%' },
       banners: [
         {
-          img: 'img/sweater.jpg', w: 1600, h: 800,
+          img: 'img/sweater.jpg', w: 1600, h: 800, mfocus: '10% 50%',
           alt: {
             ar: 'سويتر بني مغسول بشعار فيلو مطرّز على الصدر',
             en: 'A washed-brown sweater with the VEYLO wordmark embroidered on the chest',
@@ -322,7 +327,7 @@
   const bagEmpty = $('#bag-empty');
   const bagSubtotal = $('#bag-subtotal');
   const bagCount = $('#bag-count');
-  const checkoutBtn = $('#checkout');
+  const checkoutBtn = $('#bag-checkout');
   const toastEl = $('#toast');
 
   /* ------------------------------------------------------------------------
@@ -387,7 +392,7 @@
     const first = cat.banners[0];
     const layers = cat.banners.map((b, i) => `
       <div class="layer${i === 0 ? ' is-active' : ''}">
-        <img src="${b.img}" width="${b.w}" height="${b.h}" alt="${esc(L(b.alt))}" loading="lazy">
+        <img src="${b.img}" width="${b.w}" height="${b.h}" alt="${esc(L(b.alt))}" loading="lazy"${b.mfocus ? ` style="--mfocus:${b.mfocus}"` : ''}>
       </div>`).join('');
     const place = `${cat.side}:${cat.inset}%;top:${cat.top}%;width:${cat.width}%`;
     // one row per style: its colourways side by side, all at the same height
@@ -628,6 +633,7 @@
   let lastFocus = null;
   let scrimTimer = 0;
   function openBag() {
+    hideToast();                                  // the notice would otherwise sit over the checkout button on phones
     lastFocus = document.activeElement;
     clearTimeout(scrimTimer);
     scrim.hidden = false;
@@ -636,7 +642,7 @@
     bagEl.classList.add('is-open');
     bagEl.setAttribute('aria-hidden', 'false');
     bagOpenBtn.setAttribute('aria-expanded', 'true');
-    [bar, main, footer].forEach((el) => { el.inert = true; });
+    [bar, main, footer, $('#checkout')].forEach((el) => { if (el) el.inert = true; });
     requestAnimationFrame(() => bagCloseBtn.focus());
   }
   function closeBag() {
@@ -646,7 +652,7 @@
     bagEl.classList.remove('is-open');
     bagEl.setAttribute('aria-hidden', 'true');
     bagOpenBtn.setAttribute('aria-expanded', 'false');
-    [bar, main, footer].forEach((el) => { el.inert = false; });
+    [bar, main, footer, $('#checkout')].forEach((el) => { if (el) el.inert = false; });
     (lastFocus && document.contains(lastFocus) && !lastFocus.closest('dialog') ? lastFocus : bagOpenBtn).focus();
   }
 
@@ -654,7 +660,12 @@
   bagCloseBtn.addEventListener('click', closeBag);
   scrim.addEventListener('click', closeBag);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeBag(); });
-  checkoutBtn.addEventListener('click', () => { if (bag.length) toast(t('bag.preview')); });
+  checkoutBtn.addEventListener('click', () => {
+    if (!bag.length) return;
+    closeBag();
+    if (window.VEYLO_CHECKOUT) window.VEYLO_CHECKOUT.open();
+    else toast(t('bag.preview'));
+  });
 
   /* ------------------------------------------------------------------------
      Toast
@@ -707,6 +718,7 @@
     renderCollection();
     renderBag();
     if (qv.open) renderQuickView();
+    langListeners.forEach((fn) => fn(lang));
   }
 
   langBtn.addEventListener('click', () => {
@@ -718,23 +730,59 @@
   /* ------------------------------------------------------------------------
      Header hairline once the page moves
      ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------
+     Bridge for checkout.js — the only things it needs from the store
+     ------------------------------------------------------------------------ */
+  const langListeners = [];
+  window.VEYLO = {
+    get lang() { return lang; },
+    esc, L, money, pieceName, productById, colorOf,
+    bagLines: () => bag.map((l) => ({ ...l })),
+    clearBag() { bag = []; saveBag(); renderBag(); },
+    openBag,
+    toast,
+    onLang(fn) { langListeners.push(fn); },
+  };
+
   const onScroll = () => bar.classList.toggle('is-solid', window.scrollY > 8);
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
   /* ------------------------------------------------------------------------
-     Hero light — rests on the VEYLO box, follows the pointer, and drifts
-     slowly on its own when nobody is moving it
+     Hero — two banners (welcome, payment) cross-fade every 5 seconds.
+     The light: on a laptop it follows the pointer and rests on the VEYLO box
+     when the pointer leaves; on phones and tablets it glides on its own to a
+     new random spot every few seconds.
      ------------------------------------------------------------------------ */
   const heroBanner = $('#hero-banner');
   if (heroBanner) {
+    const slides = $$('.slide', heroBanner);
+    const dots = $$('.hero__dot');
+    const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    let slide = 0;
+    let slideTimer = 0;
+    let onScreen = true;
+
+    const showSlide = (i) => {
+      slide = (i + slides.length) % slides.length;
+      slides.forEach((el, k) => el.classList.toggle('is-active', k === slide));
+      dots.forEach((d, k) => d.setAttribute('aria-pressed', String(k === slide)));
+    };
+    const scheduleSlides = () => {
+      clearInterval(slideTimer);
+      if (reduceMotion || slides.length < 2) return;
+      slideTimer = setInterval(() => {
+        if (!document.hidden && onScreen) showSlide(slide + 1);
+      }, 5000);
+    };
+    dots.forEach((d) => d.addEventListener('click', () => { showSlide(Number(d.dataset.slide)); scheduleSlides(); }));
+
     let W = 0, H = 0;
     let rest = { x: 0, y: 0 };
     let cur = { x: 0, y: 0 };
     let target = { x: 0, y: 0 };
-    let lastMove = -Infinity;
     let running = false;
-    let onScreen = true;
+    let wanderTimer = 0;
 
     const paint = () => {
       heroBanner.style.setProperty('--lx', `${cur.x.toFixed(1)}px`);
@@ -744,20 +792,20 @@
       const r = heroBanner.getBoundingClientRect();
       W = r.width; H = r.height;
       rest = { x: W * 0.72, y: H * 0.6 };
-      heroBanner.style.setProperty('--lr', `${Math.max(180, W * 0.32).toFixed(0)}px`);
+      heroBanner.style.setProperty('--lr', `${Math.max(160, W * 0.32).toFixed(0)}px`);
       cur = { ...rest };
       target = { ...rest };
       paint();
     };
-    const loop = (now) => {
-      if (now - lastMove > 2600) {
-        target = {
-          x: rest.x + Math.sin(now / 3200) * W * 0.08,
-          y: rest.y + Math.sin(now / 2300) * H * 0.07,
-        };
-      }
-      cur.x += (target.x - cur.x) * 0.07;
-      cur.y += (target.y - cur.y) * 0.07;
+    const randomSpot = () => ({ x: W * (0.1 + Math.random() * 0.8), y: H * (0.15 + Math.random() * 0.7) });
+    const wander = () => {                          // phones/tablets: a new random spot every 2.2–3.4 s
+      target = randomSpot();
+      wanderTimer = setTimeout(wander, 2200 + Math.random() * 1200);
+    };
+    const loop = () => {
+      const ease = canHover ? 0.08 : 0.03;          // the wandering light glides slower than the pointer one
+      cur.x += (target.x - cur.x) * ease;
+      cur.y += (target.y - cur.y) * ease;
       paint();
       if (onScreen) requestAnimationFrame(loop);
       else running = false;
@@ -768,13 +816,17 @@
       requestAnimationFrame(loop);
     };
 
-    heroBanner.addEventListener('pointermove', (e) => {
-      const r = heroBanner.getBoundingClientRect();
-      target = { x: e.clientX - r.left, y: e.clientY - r.top };
-      lastMove = performance.now();
-      if (reduceMotion) { cur = { ...target }; paint(); }
-    });
-    heroBanner.addEventListener('pointerleave', () => { lastMove = performance.now() - 1800; });
+    if (canHover) {
+      heroBanner.addEventListener('pointermove', (e) => {
+        const r = heroBanner.getBoundingClientRect();
+        target = { x: e.clientX - r.left, y: e.clientY - r.top };
+        if (reduceMotion) { cur = { ...target }; paint(); }
+      });
+      heroBanner.addEventListener('pointerleave', () => {
+        target = { ...rest };
+        if (reduceMotion) { cur = { ...rest }; paint(); }
+      });
+    }
 
     new IntersectionObserver(([entry]) => {
       onScreen = entry.isIntersecting;
@@ -788,6 +840,9 @@
     });
 
     measure();
+    showSlide(0);
+    scheduleSlides();
+    if (!canHover && !reduceMotion) wander();
     start();
   }
 

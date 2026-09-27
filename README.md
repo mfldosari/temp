@@ -10,7 +10,8 @@ A dark, Arabic-first storefront for VEYLO (with an English switch), built as pla
 |---|---|
 | `index.html` | Page structure: header, welcome banner, tagline, collection, payment banner, footer |
 | `style.css` | The look: colours, type, layout |
-| `app.js` | Products, Arabic/English copy, quick view, bag |
+| `app.js` | Products, Arabic/English copy, hero slideshow and light, quick view, bag |
+| `checkout.js` | The demo checkout: delivery, shipping, payment, confirmation |
 | `img/` | Brand banners (original files, never cropped) |
 | `img/collection/` | One photo per piece (original files, never cropped) |
 
@@ -22,9 +23,19 @@ Everything about the pieces lives in `PRODUCTS` near the top of `app.js`. The co
 - **Add a style:** copy a whole style block, give it a new `id`, and set `category` to `pullovers` or `sweaters`.
 - **Prices are placeholders.** Replace `price` on each style.
 
-## Not connected yet
+## Checkout (demo, end to end)
 
-Checkout is a preview: the bag works, but the "Checkout" button only shows a notice. No payment is taken.
+Bag → delivery details → shipping → payment → order confirmation. Nothing is charged and nothing typed is sent anywhere.
+
+- **Card (mada, Visa, Mastercard):** only the demo cards work, then a simulated bank verification step. Use code `1234`.
+  - `4242 4242 4242 4242`: succeeds
+  - `5555 5555 5555 4444`: succeeds
+  - `4000 0000 0000 0002`: is declined
+  - Any future expiry date and any 3-digit security code.
+- **Apple Pay, tabby, tamara:** simulated approval sheets. tabby and tamara use code `1234`.
+- **Shipping fees and times are placeholders** (`SHIPPING` in `checkout.js`).
+
+Connecting a real payment gateway means replacing the simulated steps in `checkout.js` with the provider's own checkout.
 
 ## Run locally
 
