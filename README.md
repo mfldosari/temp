@@ -10,7 +10,7 @@ A dark, Arabic-first storefront for VEYLO (with an English switch), built as pla
 - **Pullovers** (`#pullovers`) and **Sweaters** (`#sweaters`): a page per category, opened by the banner's "Discover" link or the header. The pullovers page has a filter by style.
 - **Checkout**: opens from the bag (see below).
 
-A VEYLO loader plays on a first visit (the wordmark assembles and the screen opens from the centre), and a short version on later visits, page changes and payment. Photos load over a shimmering skeleton.
+A VEYLO loader plays on a first visit: the wordmark sits as a dim ghost on black while a narrow beam sweeps across it, lighting only what it passes (one 3.4 s sweep, then the screen opens from the centre). Later visits and page changes, including going back from a category page, use a faster sweep; payment processing shows a small one. Photos load over a shimmering skeleton.
 
 ## What's here
 

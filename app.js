@@ -514,7 +514,10 @@
     im.src = src;
   })));
 
+  let navToken = 0;           // a newer navigation cancels an older one still waiting on the loader
+
   async function showCategory(id) {
+    const token = ++navToken;
     const fresh = pageCat !== id || viewCat.hidden;
     pageCat = id;
     if (fresh) pageFilter = '';
@@ -525,6 +528,7 @@
     if (!fresh) { renderCategoryPage(); return; }
     const { covered, opening } = loader.flash();          // the VEYLO loader covers the switch
     await covered;
+    if (token !== navToken) return;
     pageSkeleton = true;
     renderCategoryPage();                                 // skeleton cards first, under the loader
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -532,14 +536,20 @@
     const photos = stylesOf(cat).flatMap((p) => p.colors.map((c) => c.photo.src));
     await Promise.all([opening, Promise.race([decodeAll(photos), new Promise((r) => setTimeout(r, 2500))])]);
     await new Promise((r) => setTimeout(r, reduceMotion ? 0 : 700));   // the skeleton shows as the room opens
-    if (pageCat !== id) return;
+    if (token !== navToken || pageCat !== id) return;
     pageSkeleton = false;
     renderCategoryPage();
     $('#catpage-title')?.focus({ preventScroll: true });
   }
 
-  function showHome(anchor) {
+  async function showHome(anchor) {
+    const token = ++navToken;
     const wasCat = !viewCat.hidden;
+    if (wasCat) {                                         // leaving a category page: the loader covers the switch
+      markNav(null);
+      await loader.flash().covered;
+      if (token !== navToken) return;
+    }
     viewCat.hidden = true;
     viewHome.hidden = false;
     pageCat = null;
@@ -605,35 +615,47 @@
      ------------------------------------------------------------------------ */
   const loader = (() => {
     const el = $('#loader');
+    const CYCLE = { intro: 3400, quick: 1300 };           // must match --sweep-dur in style.css
     let hideTimer = 0;
+    let cycleTimer = 0;
     const leave = () => {
+      clearTimeout(cycleTimer);
       el.classList.add('is-leaving');
       clearTimeout(hideTimer);
-      hideTimer = setTimeout(() => { el.hidden = true; el.className = 'loader'; }, reduceMotion ? 50 : 900);
+      hideTimer = setTimeout(() => { el.hidden = true; el.className = 'loader'; }, reduceMotion ? 50 : 800);
     };
     return {
-      // first paint of the site
+      // first paint of the site: at least one full sweep, then open once the page has loaded
       intro() {
         let first = true;
         try { first = !localStorage.getItem('veylo.visited'); localStorage.setItem('veylo.visited', '1'); } catch { /* storage unavailable: treat as a first visit */ }
         el.hidden = false;
         el.className = `loader ${first ? 'is-intro' : 'is-quick'}`;
-        const minTime = reduceMotion ? 500 : first ? 2600 : 700;
-        const loaded = document.readyState === 'complete' ? Promise.resolve() : new Promise((r) => window.addEventListener('load', r, { once: true }));
-        Promise.all([new Promise((r) => setTimeout(r, minTime)), Promise.race([loaded, new Promise((r) => setTimeout(r, 4200))])]).then(leave);
+        if (reduceMotion) { setTimeout(leave, 500); return; }
+        const cycle = first ? CYCLE.intro : CYCLE.quick;
+        let loaded = document.readyState === 'complete';
+        if (!loaded) window.addEventListener('load', () => { loaded = true; }, { once: true });
+        let sweeps = 0;
+        const atCycleEnd = () => {                         // leave only between sweeps, never mid-sweep
+          sweeps += 1;
+          if (loaded || sweeps * cycle > 6500) leave();
+          else cycleTimer = setTimeout(atCycleEnd, cycle);
+        };
+        cycleTimer = setTimeout(atCycleEnd, cycle);
       },
-      // a short cover for switching pages: `covered` once the screen is covered,
-      // `opening` once it starts to open again
+      // a cover for switching pages, one quick sweep long: `covered` once the
+      // screen is covered, `opening` once it starts to open again
       flash() {
         if (!el.hidden && !el.classList.contains('is-leaving')) {
           const soon = new Promise((r) => setTimeout(r, 300));
           return { covered: soon, opening: soon };
         }
         clearTimeout(hideTimer);
+        clearTimeout(cycleTimer);
         el.hidden = false;
         el.className = 'loader is-quick is-flash';
-        const covered = new Promise((r) => setTimeout(r, reduceMotion ? 0 : 200));
-        const opening = covered.then(() => new Promise((r) => setTimeout(() => { leave(); r(); }, reduceMotion ? 0 : 550)));
+        const covered = new Promise((r) => setTimeout(r, reduceMotion ? 0 : 150));
+        const opening = new Promise((r) => { cycleTimer = setTimeout(() => { leave(); r(); }, reduceMotion ? 150 : CYCLE.quick); });
         return { covered, opening };
       },
     };

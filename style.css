@@ -727,85 +727,61 @@ h2 { font-size: clamp(28px, 3.4vw, 42px); }
   z-index: 200;
   display: grid;
   place-items: center;
-  background: var(--ink);
-  color: var(--bone);
+  background: #000;
 }
-.loader__stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; width: min(64vw, 440px); transition: transform .9s var(--ease); }
-.loader__mark { display: block; width: 100%; height: auto; overflow: visible; }
-.loader__mark * { transform-box: fill-box; transform-origin: center; }
-.loader__mark .le { transform-origin: left center; }
-.loader__beam {
+
+/* The sweep: the wordmark and a faint line as a dim ghost, and a lit copy on
+   top that shows only through a narrow, feathered vertical slit moving left
+   to right. Always left to right, whatever the page direction. */
+.sweep {
+  --sweep-w: min(58vw, 420px);
+  --sweep-dur: 3.4s;
+  position: relative;
+  display: block;
+  width: var(--sweep-w);
+  direction: ltr;
+}
+.sweep--small { --sweep-w: 180px; }
+.sweep__layer { display: flex; flex-direction: column; gap: calc(var(--sweep-w) * .085); }
+.sweep__mark { display: block; width: 100%; height: auto; aspect-ratio: 1069 / 100; overflow: visible; }
+.sweep__line { display: block; height: 1px; }
+.sweep__layer--dim { color: rgba(242, 242, 239, .13); }
+.sweep__layer--dim .sweep__line { background: rgba(242, 242, 239, .07); }
+.sweep__layer--lit {
   position: absolute;
-  top: -20%;
-  left: -34%;
-  width: 34%;
-  height: 90%;
-  background: linear-gradient(100deg, transparent 10%, rgba(255, 238, 212, .38) 50%, transparent 90%);
-  mix-blend-mode: screen;
-  opacity: 0;
-  pointer-events: none;
+  inset: 0;
+  color: #f2f2ef;
+  -webkit-mask-image: linear-gradient(90deg, transparent 46.2%, rgba(0, 0, 0, .5) 48.6%, #000 50%, rgba(0, 0, 0, .5) 51.4%, transparent 53.8%);
+          mask-image: linear-gradient(90deg, transparent 46.2%, rgba(0, 0, 0, .5) 48.6%, #000 50%, rgba(0, 0, 0, .5) 51.4%, transparent 53.8%);
+  -webkit-mask-size: 240% 100%;
+          mask-size: 240% 100%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: 100% 0;
+          mask-position: 100% 0;
+  animation: slit var(--sweep-dur) infinite;
 }
-.loader__rule { display: block; width: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--sand), transparent); }
-.loader__tag { margin: 0; font-size: 10px; color: var(--ash); opacity: 0; white-space: nowrap; }
-
-/* first visit: the wordmark assembles letter by letter, the light passes, the line and tagline follow */
-.is-intro .lv { animation: l-rise .7s .15s var(--ease) both; }
-.is-intro .le { animation: l-bar .5s var(--ease) both; }
-.is-intro .le1 { animation-delay: .35s; }
-.is-intro .le2 { animation-delay: .43s; }
-.is-intro .le3 { animation-delay: .51s; }
-.is-intro .ly { animation: l-rise .7s .58s var(--ease) both; }
-.is-intro .ll { animation: l-rise .7s .72s var(--ease) both; }
-.is-intro .lo-top { animation: l-top .75s .86s var(--ease) both; }
-.is-intro .lo-bot { animation: l-bot .75s .86s var(--ease) both; }
-.is-intro .loader__beam { animation: beam 1.15s 1.2s ease-in-out both; }
-.is-intro .loader__rule { animation: rule .9s 1.35s var(--ease) both; }
-.is-intro .loader__tag { animation: tag 1.1s 1.6s var(--ease) both; }
-
-/* later visits and page changes: the same pieces, quickly */
-.is-quick .lv, .is-quick .ly, .is-quick .ll { animation: l-rise .4s var(--ease) both; }
-.is-quick .ly { animation-delay: .06s; }
-.is-quick .ll { animation-delay: .1s; }
-.is-quick .le { animation: l-bar .35s .03s var(--ease) both; }
-.is-quick .lo-top { animation: l-top .4s .12s var(--ease) both; }
-.is-quick .lo-bot { animation: l-bot .4s .12s var(--ease) both; }
-.is-quick .loader__beam { animation: beam .75s .15s ease-in-out both; }
-.is-quick .loader__rule { width: 40%; }
-.is-quick .loader__tag { display: none; }
-.loader.is-flash { animation: loader-in .2s ease-out both; }
+.sweep__layer--lit .sweep__line { background: #f2f2ef; }
+/* a short dark hold, the sweep (slow in, fast through the middle, slow out), then dark again */
+@keyframes slit {
+  0%, 10% { -webkit-mask-position: 100% 0; mask-position: 100% 0; animation-timing-function: cubic-bezier(.62, 0, .38, 1); }
+  78%, 100% { -webkit-mask-position: 0% 0; mask-position: 0% 0; }
+}
+.loader.is-quick .sweep { --sweep-dur: 1.3s; }
+.loader.is-flash { animation: loader-in .15s ease-out both; }
 
 /* leaving: the room opens from the centre */
 .loader.is-leaving {
-  animation: loader-out .9s var(--ease) forwards;
+  animation: loader-out .8s var(--ease) forwards;
   -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 16%));
           mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 16%));
 }
-.loader.is-leaving .loader__stage { transform: scale(1.05); }
-
-@keyframes l-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
-@keyframes l-bar  { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes l-top  { from { opacity: 0; transform: translateY(-36px); } to { opacity: 1; transform: none; } }
-@keyframes l-bot  { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: none; } }
-@keyframes beam   { 0% { opacity: 0; transform: translateX(0); } 15%, 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(430%); } }
-@keyframes rule   { from { width: 0; } to { width: 72%; } }
-@keyframes tag    { from { opacity: 0; letter-spacing: .7em; } to { opacity: .9; letter-spacing: .42em; } }
 @keyframes loader-in  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes loader-out { 0% { --hole: 0%; opacity: 1; } 70% { opacity: 1; } 100% { --hole: 130%; opacity: 0; } }
 
-/* smaller loader for waits inside the page (payment) */
-.mini-loader { position: relative; display: block; width: 180px; }
-.mini-loader .wm { color: #3a342e; }
-.mini-loader__lit {
-  position: absolute;
-  inset: 0;
-  color: var(--bone);
-  -webkit-mask-image: linear-gradient(100deg, transparent 35%, #000 50%, transparent 65%);
-          mask-image: linear-gradient(100deg, transparent 35%, #000 50%, transparent 65%);
-  -webkit-mask-size: 300% 100%;
-          mask-size: 300% 100%;
-  animation: lit 1.6s ease-in-out infinite;
+@media (prefers-reduced-motion: reduce) {
+  .sweep__layer--lit { -webkit-mask-image: none; mask-image: none; }   /* no sweep: show the mark plainly */
 }
-@keyframes lit { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
 
 /* skeletons: a slow shimmer until the image (or the real card) arrives */
 .skel,
@@ -1172,7 +1148,8 @@ select.input {
   .entry__lede { font-size: 14px; }
   .entry__cta { align-self: flex-start; min-width: 190px; margin-top: 12px; font-size: 13px; }
   .entry__count { margin-top: 8px; font-size: 13px; }
-  .loader__stage { width: min(72vw, 320px); }
+  .sweep { --sweep-w: min(68vw, 300px); }
+  .sweep--small { --sweep-w: 160px; }
   .hero__cta .btn { flex: 1; }
 
   .emb { letter-spacing: .24em; padding-inline-start: .24em; }

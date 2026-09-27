@@ -457,7 +457,10 @@
   function processingHTML() {
     return `
       <div class="co__proc" role="status">
-        <span class="mini-loader" aria-hidden="true"><svg class="wm"><use href="#wordmark"/></svg><svg class="wm mini-loader__lit"><use href="#wordmark"/></svg></span>
+        <span class="sweep sweep--small" aria-hidden="true">
+          <span class="sweep__layer sweep__layer--dim"><svg class="sweep__mark"><use href="#wordmark"/></svg><span class="sweep__line"></span></span>
+          <span class="sweep__layer sweep__layer--lit"><svg class="sweep__mark"><use href="#wordmark"/></svg><span class="sweep__line"></span></span>
+        </span>
         <p>${esc(t('proc'))}</p>
       </div>`;
   }
